@@ -23,14 +23,12 @@ make run
 
 Open **⚙ Model settings**, check your AWS account, select a model, and explicitly authorize a small spending allowance before asking a new question. Merely opening the app or saving a model choice does not authorize paid calls. Each collaborator uses their own AWS account; no keys or credentials are shared with the project.
 
-<details>
-<summary>See model settings and spending controls</summary>
+**Model settings and spending controls**
 
 ![Model settings with Bedrock selection and explicit spending consent](docs/screenshots/model-settings.jpg)
 
 Paid calls are disabled in this screenshot. The displayed ledger is this developer workspace’s recorded trial usage; a new installation creates its own ledger.
 
-</details>
 
 ## Using the workspace
 
@@ -39,8 +37,7 @@ Paid calls are disabled in this screenshot. The displayed ledger is this develop
 - **Choose a historical date.** Expand the research scope and set **Rules as of** to the date whose rules you want researched—for example, a past notice or coverage period. Leave it blank if unspecified. The system checks document dates and applicability; the date does not supply a missing historical edition or guarantee that the collection establishes the rules then in force. Plan type is inferred from the question, with clarification when needed.
 - **Read the evidence.** Responses show supported findings, exact quotations, citations, and unresolved gaps. Click a citation to browse the saved document and highlighted text. **View debug report** shows retrieval, context expansion, relationship leads, model instructions, review results, usage, and validation failures. Private chain-of-thought is not requested or recorded.
 
-<details>
-<summary>See an example answer and highlighted source</summary>
+**Example answer and highlighted source**
 
 ![Saved partial answer with clickable citations](docs/screenshots/IMG_1702.png)
 
@@ -50,7 +47,12 @@ This historical saved result illustrates the interface. It contains known applic
 
 This example shows a saved text source. PDF sources open in the paginated viewer; highlights locate text and do not establish legal applicability.
 
-</details>
+**Open the official source**
+
+![Official eCFR source opened from the document viewer](docs/screenshots/IMG_4666.png)
+
+The official-source link opens the publisher’s website separately from corpus-grounded research.
+
 
 Document retrieval and the relationship map run on your laptop. **New query vectors still use AWS Titan**, even when the answer model is local; identical cached queries reuse their vectors. Bedrock generation sends the question and selected source context to AWS. Local generation sends that context only to the selected loopback model server. The demo has no hosted server or offline chatbot mode. [Storage, privacy, costs, and model setup](README-technical.md) explains the details.
 
