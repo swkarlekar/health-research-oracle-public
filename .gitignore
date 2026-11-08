@@ -25,3 +25,5 @@ text_corpus/evaluation/*.log
 *.zip
 *.log
 oracle-data-manifest.json
+# Demo videos are distributed as GitHub release assets.
+docs/screenshots/*.mov
