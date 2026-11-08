@@ -57,6 +57,7 @@ class LocalApp:
                  retriever='local', vector_cache=VECTOR_CACHE, query_cache=QUERY_CACHE, budget_path=None):
         self.db, self.registry, self.graph = Path(db), Path(registry), Path(graph)
         self.history = Path(history)
+        self.history_namespace = base.digest(str(self.history.resolve()))
         self.instance = runtime_identity(ROOT)
         if not 16000 <= context_chars <= 80000:
             raise HarnessError('UI context budget must be between 16000 and 80000 characters')
@@ -409,6 +410,7 @@ class LocalHandler(BaseHTTPRequestHandler):
                             saved_aws.append(row['scenario'])
                 self.send({'csrf_token': app.token, 'model': app.model_name,
                            'instance': app.instance,
+                           'history_namespace': app.history_namespace,
                            'retriever': app.retriever,
                            'model_settings': app.models.public(),
                            'saved_example_available': (ROOT / 'artifacts/scenario-01.debug.json').is_file(),

@@ -1,6 +1,11 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const state = {config:null, thread:null, runs:[], busy:false, viewer:null, viewerSerial:0, navigation:0, observers:[], dateEdited:false, settings:null, localModels:[], checkedAccount:null};
+const state = {config:null, threadKey:null, thread:null, runs:[], busy:false, viewer:null, viewerSerial:0, navigation:0, observers:[], dateEdited:false, settings:null, localModels:[], checkedAccount:null};
+function rememberThread(identity) {
+  if(!state.threadKey)return;
+  if(identity)localStorage.setItem(state.threadKey,identity);
+  else localStorage.removeItem(state.threadKey);
+}
 function el(tag, attrs={}, ...children) {
   const element=document.createElement(tag);
   for(const [key,value] of Object.entries(attrs)) {
@@ -101,19 +106,20 @@ function renderMessages() {
 async function history() {
   const threads=await api('/api/threads');
   $('history').replaceChildren(...(threads.length?threads.map(t=>el('button',{class:'thread '+(t.id===state.thread?'active':''),title:t.title,onClick:()=>openThread(t.id)},t.title)):[el('p',{class:'history-empty'},'Your conversations will appear here.')]));
+  return threads;
 }
 async function openThread(identity) {
   const navigation=++state.navigation;
   try {
     const runs=await api('/api/threads/'+identity);
     if(navigation!==state.navigation)return;
-    state.thread=identity;state.runs=runs;localStorage.setItem('oracle.activeThread',identity);
+    state.thread=identity;state.runs=runs;rememberThread(identity);
     if(runs.length)fillScope(runs.at(-1).scope);
     renderMessages();await history();document.querySelector('.workspace').classList.remove('show-history');
   }catch(error){message(error.message);}
 }
 function newResearch() {
-  state.navigation++;state.thread=null;state.runs=[];localStorage.removeItem('oracle.activeThread');renderMessages();history();
+  state.navigation++;state.thread=null;state.runs=[];rememberThread(null);renderMessages();history();
   state.dateEdited=false;$('question').value='';$('research-date').value='';$('program').value='New York Medicaid';$('scope-toggle').firstChild.textContent='New York Medicaid ';$('use-history').checked=true;$('question').focus();document.querySelector('.workspace').classList.remove('show-history');
 }
 function fillScope(scope) {
@@ -150,7 +156,7 @@ async function submit(event) {
     const scope={program:$('program').value.trim()||null};
     if($('research-date').value || state.dateEdited)scope.research_date=$('research-date').value||'unknown';
     const run=await api('/api/ask',{question,thread_id:state.thread,use_history:$('use-history').checked,scope,clear_research_date:state.dateEdited&&!$('research-date').value});
-    if(state.thread!==run.thread_id){state.thread=run.thread_id;state.runs=[];localStorage.setItem('oracle.activeThread',run.thread_id);}
+    if(state.thread!==run.thread_id){state.thread=run.thread_id;state.runs=[];rememberThread(run.thread_id);}
     fillScope(run.scope);upsert(run);$('question').value='';await history();
     $('chat-scroll').scrollTo({top:$('chat-scroll').scrollHeight,behavior:'smooth'});
     if(run.status==='running')poll(run.id);else busy(false);
@@ -176,7 +182,7 @@ async function savedExample() {
   try {
     $('saved-example').disabled=true;
     const run=await api('/api/example',savedAwsCase()?{case:savedAwsCase()}:{});state.thread=run.thread_id;state.runs=[run];fillScope(run.scope);
-    localStorage.setItem('oracle.activeThread',run.thread_id);renderMessages();await history();
+    rememberThread(run.thread_id);renderMessages();await history();
   }catch(error){message(error.message);}
   finally{$('saved-example').disabled=false;}
 }
@@ -402,9 +408,14 @@ $('zoom').addEventListener('click',()=>{const zoomed=$('document-pages').classLi
 (async()=>{
   try {
     state.config=await api('/api/config');applySettings(state.config.model_settings);$('send').disabled=false;
+    state.threadKey='oracle.activeThread:'+state.config.history_namespace;
     for(const sample of state.config.scenarios)$('examples').append(el('option',{value:sample.id},sample.id+'. '+sample.title));
     updateSavedExample();
-    await history();const last=localStorage.getItem('oracle.activeThread');if(last)await openThread(last);
+    const threads=await history();
+    const last=localStorage.getItem(state.threadKey)||localStorage.getItem('oracle.activeThread');
+    localStorage.removeItem('oracle.activeThread');
+    if(last && threads.some(thread=>thread.id===last))await openThread(last);
+    else rememberThread(null);
     const running=state.runs.find(r=>r.status==='running');if(running){busy(true);poll(running.id);}
   }catch(error){message('Could not connect to the local research server: '+error.message);}
 })();

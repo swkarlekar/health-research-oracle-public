@@ -18,6 +18,19 @@ from oracle.corpus import base
 
 
 class WebTests(Fixture):
+    def test_conversation_namespace_is_stable_for_one_history_and_isolates_another(self):
+        app = self.app()
+        run = app.add_run('Synthetic question', 'Synthetic question', SCOPE)
+        identity = app.row(run)['thread_id']
+        reopened = self.app()
+        other = LocalApp(self.db, self.registry, self.root / 'graph.sqlite', self.root / 'other-history.sqlite',
+                         model_factory=lambda: ScriptedModel(), budget_path=self.root / 'budget.sqlite')
+        self.assertEqual(app.history_namespace, reopened.history_namespace)
+        self.assertNotEqual(app.history_namespace, other.history_namespace)
+        self.assertEqual(reopened.thread(identity)[0]['question'], 'Synthetic question')
+        self.assertEqual(other.threads(), [])
+        self.assertEqual(len(app.threads()), 1)
+
     def test_ui_infers_plan_without_requiring_a_duplicate_form_field(self):
         app = self.app()
         for question, expected in [('New York Medicaid MLTC rules', 'MLTC'),
