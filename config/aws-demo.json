@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "status": "configuration_only_live_trial_separately_scoped",
+  "region": "us-east-1",
+  "embeddings": {
+    "model_id": "amazon.titan-embed-text-v2:0",
+    "dimensions": 1024,
+    "status": "live_trial_vectors_exported_and_restore_retrieval_verified"
+  },
+  "retrieval": {
+    "knowledge_base_id": null,
+    "data_source_id": null,
+    "max_pages": 2
+  },
+  "generation": {
+    "draft_model_id": "qwen.qwen3-32b-v1:0",
+    "review_model_id": "qwen.qwen3-32b-v1:0",
+    "relationship_model_id": "amazon.nova-lite-v1:0",
+    "relationship_review_model_id": "amazon.nova-lite-v1:0",
+    "max_output_tokens": 4096,
+    "max_prompt_chars": 110000,
+    "temperature": 0,
+    "routing": "in_region",
+    "status": "qwen_32b_selected_trial_results_kept_locally",
+    "selection_basis": "User-selected approximate size match, not the same architecture or generation as local Qwen3.6. In-region Converse and native JSON-schema output were exercised in us-east-1. Full local validation remains mandatory; observed content failures are documented in docs/aws-trial.md."
+  },
+  "network_policy": {
+    "live_aws_enabled_by_default": false,
+    "explicit_expiring_action_resource_grants_required": true,
+    "sdk_retries": 0,
+    "cross_region_inference_enabled": false
+  },
+  "documentation": {
+    "model": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-qwen-qwen3-32b.html",
+    "converse": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-runtime/client/converse.html",
+    "retrieve": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-agent-runtime/client/retrieve.html",
+    "ingestion": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-agent/client/start_ingestion_job.html"
+  }
+}

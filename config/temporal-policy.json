@@ -1,0 +1,6 @@
+{
+  "document_last_modified_proxy_allowed": true,
+  "http_last_modified_proxy_allowed": false,
+  "preference": "Use applicable dates established by source text first. If the text does not establish dates, embedded document last-modified metadata may be used as a clearly labeled secondary proxy.",
+  "limitations": "A last-modified proxy is not proof of a legal effective date, applicability, or supersession. Retain conflicting source statements. Never use acquisition time as this proxy."
+}

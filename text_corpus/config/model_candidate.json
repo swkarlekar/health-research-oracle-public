@@ -1,0 +1,31 @@
+{
+  "status": "candidate_not_evaluated_on_client_benchmark",
+  "model_id": "Qwen/Qwen3-8B",
+  "model_card_url": "https://huggingface.co/Qwen/Qwen3-8B",
+  "publisher": "Qwen",
+  "license": "Apache-2.0",
+  "parameter_count_reported": "8.2B",
+  "native_context_tokens_reported": 32768,
+  "proposed_poc_context_budget_tokens": 12000,
+  "proposed_max_output_tokens": 1500,
+  "serving_option": "User-provided local OpenAI-compatible endpoint, for example vLLM",
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  },
+  "fine_tuning_status": "not_started",
+  "weights_downloaded": false,
+  "inference_executed": false,
+  "benchmark_status": "awaiting_client_queries_and_reference_answers",
+  "selection_rationale": "Small, openly available text model with documented local serving interface; candidate to compare before and after retrieval-conditioned behavior tuning. No task-specific quality or throughput claim.",
+  "financial_model": "Measure GPU-hour cost, throughput, and latency on the selected hardware, or supply per-token API rates to the harness. A GPU size or rate is not inferred from parameter count.",
+  "source_checked_at": "2026-11-06T20:35:33.049753+00:00",
+  "context_budget_definition": "Proposed total input-plus-output token target; not automatically enforced by the harness.",
+  "budget_reference": "config/budget_reference.json",
+  "hardware_trial_candidate": {
+    "instance_type": "g5.xlarge",
+    "region": "us-east-1",
+    "precision": "to_be_selected_and_measured",
+    "memory_fit_verified": false,
+    "throughput_verified": false
+  }
+}

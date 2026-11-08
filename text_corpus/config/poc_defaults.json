@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "retrieval": {
+    "engine": "sqlite_fts5",
+    "mode": "lexical_only",
+    "default_limit": 6,
+    "max_limit": 30,
+    "benchmark_status": "awaiting_client_benchmark"
+  },
+  "inference": {
+    "endpoint": "http://127.0.0.1:8000/v1/chat/completions",
+    "enabled_by_default": false,
+    "max_output_tokens": 2000,
+    "temperature": 0,
+    "network_scope": "loopback_only",
+    "training_performed": false
+  },
+  "cost_estimate": {
+    "currency": "USD",
+    "input_per_million_tokens": 3.0,
+    "output_per_million_tokens": 15.0,
+    "expected_output_tokens": 1500,
+    "characters_per_token_assumption": 4.0,
+    "queries_per_hour": 60,
+    "hours_per_day": 8,
+    "days_per_year": 250,
+    "status": "illustrative_configurable_assumptions_not_vendor_prices",
+    "exclusions": ["retrieval", "hosting", "GPU utilization", "training", "development", "expert review", "OCR", "transcription"]
+  },
+  "human_resolutions": {
+    "relative_path": "reviews/resolutions.jsonl",
+    "append_only": true,
+    "updates_source_metadata": false,
+    "reuse_policy": "same_research_scope_and_same_evidence_hashes_only"
+  }
+}

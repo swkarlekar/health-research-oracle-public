@@ -1,0 +1,27 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+.aws/
+.codex/
+.agents/
+artifacts/
+aws-approval.json
+# Source bytes, extracted content, queries, and review decisions stay local.
+*.pdf
+text_corpus/raw/
+text_corpus/reference/
+text_corpus/processed/
+text_corpus/manifests/
+text_corpus/audit/
+text_corpus/examples/*.json
+text_corpus/reviews/
+text_corpus/tmp/
+text_corpus/evaluation/*.log
+*.sqlite*
+*.zip
+*.log
+oracle-data-manifest.json

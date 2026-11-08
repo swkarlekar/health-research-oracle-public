@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:public-health-oracle:research-response:1.0",
+  "title": "Document-only research response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "scope",
+    "findings",
+    "quotes",
+    "uncertainties",
+    "clarifying_questions"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "supported",
+        "partial",
+        "clarification_needed",
+        "conflicting_sources",
+        "currency_unverified",
+        "not_found"
+      ]
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question",
+        "program",
+        "plan_type",
+        "research_date",
+        "assumptions"
+      ],
+      "properties": {
+        "question": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1600
+        },
+        "program": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plan_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "research_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1600
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "text",
+          "evidence_ids"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1600
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^E[1-9][0-9]*$"
+            },
+            "uniqueItems": true,
+            "minItems": 1
+          }
+        }
+      }
+    },
+    "quotes": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "chunk_id",
+          "start",
+          "end"
+        ],
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "uncertainties": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "description",
+          "evidence_ids",
+          "question_for_user"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1600
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^E[1-9][0-9]*$"
+            },
+            "uniqueItems": true
+          },
+          "question_for_user": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1600
+          }
+        }
+      }
+    },
+    "clarifying_questions": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1600
+      }
+    }
+  }
+}

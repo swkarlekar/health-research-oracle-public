@@ -1,0 +1,24 @@
+{
+  "region": "us-east-1",
+  "generation_model_id": "qwen.qwen3-32b-v1:0",
+  "embedding_model_id": "amazon.titan-embed-text-v2:0",
+  "embedding_dimensions": 1024,
+  "llm_input_per_million": 0.15,
+  "llm_output_per_million": 0.6,
+  "embedding_per_million": 0.02,
+  "s3_put_per_1000": 0.005,
+  "s3_vector_query_per_million": 2.5,
+  "s3_vector_processing_per_tb": 0.004,
+  "s3_vector_return_per_gb": 0.01,
+  "s3_vector_put_per_gb": 0.2,
+  "s3_vector_storage_per_gb_month": 0.06,
+  "publication_date": "2026-11-06T18:45:38Z",
+  "checked_at": "2026-11-08T01:03:25.756427+00:00",
+  "sources": [
+    "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonBedrock/current/us-east-1/index.json",
+    "https://aws.amazon.com/s3/pricing/"
+  ],
+  "status": "public_price_snapshot_not_measured_account_charges",
+  "strict_trial_cap_usd": 10,
+  "safety_reserve_usd": 2
+}

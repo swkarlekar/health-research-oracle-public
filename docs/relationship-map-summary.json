@@ -1,0 +1,41 @@
+{
+  "all_canonical_sections_scanned": true,
+  "all_snapshot_documents_accounted_for": true,
+  "canonical_chunk_count": 4572,
+  "document_count": 108,
+  "document_processing_status_counts": {
+    "index_only": 26,
+    "not_acquired": 24,
+    "processed": 58
+  },
+  "documents_without_text": 24,
+  "graph_content_sha256": "0cc734804f620398c4ae97521a292db392bb29c7a8ba4e6350c945a1a586568f",
+  "limitations": [
+    "Textual references and lexical relationship signals only; embedded links not present in canonical text may be missed.",
+    "A verified reference establishes source-to-target identity only, not authority, applicability, or legal currentness.",
+    "Unavailable source contents and unresolved targets cannot be assessed; candidate/model-reviewed edges remain evidence leads."
+  ],
+  "relationship_count": 10991,
+  "relationship_status_counts": {
+    "model_rejected": 4,
+    "model_reviewed": 85,
+    "unresolved": 6721,
+    "verified_reference": 4181
+  },
+  "relationship_type_counts": {
+    "amends": 2805,
+    "clarifies": 52,
+    "conflicts_with": 164,
+    "corrects": 302,
+    "references": 7522,
+    "relationship_signal": 4,
+    "supersedes": 142
+  },
+  "review_count": 90,
+  "schema_version": "1.0",
+  "section_count": 2867,
+  "sections_scanned": 2867,
+  "semantic_completeness_verified": false,
+  "snapshot_sha256": "90686cc5ae629f02e62a68ef2134de2c5e6324fc5337d2fcba8f483806d5bfb7",
+  "record_count_note": "Typed relationship labels include unresolved lexical signals; they are not counts of verified amendments."
+}

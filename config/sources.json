@@ -1,0 +1,763 @@
+{
+  "schema_version": "1.0",
+  "snapshot_sha256": "f63013298e2f9473803a2c9ba6b3534e2f8f15649c89fbc684ab2bd0d418fd25",
+  "approval_basis": "User selected the current customer-PDF corpus. Selection is not authority, applicability, or currency verification.",
+  "sources": [
+    {
+      "document_id": "customer_015de29d8730",
+      "source_url": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Manuals/Internet-Only-Manuals-IOMs-Items/CMS019036",
+      "raw_sha256": "eddbeff549f31b3d302516ef9e45979f8a929f82fbfddafa3866e1c4c7df750f",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_016356965023",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/pbh-sect-4905.html",
+      "raw_sha256": "8c14c81877a5edc0a5c4073de4891e17804aa9282557d7445407f297c3329b41",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_01c6a75d73ac",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/mltc/mltcplans.htm",
+      "raw_sha256": "ae3c8595a6e9cbe1b1067bda5923b121b387f7e432c1483a6f286124df1a5854",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_03adf027566b",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/1396b",
+      "raw_sha256": "2f018876c46d1f79c601983506fa2f8630f3b9fd6c1c363430eac0ffa31b7d3d",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_0598798916f7",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/reports/index.htm",
+      "raw_sha256": "445483ee41527164df17188622ab403e40485e94116824beb50f8a6a1565b68e",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_095445ee71bc",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/1396u-4",
+      "raw_sha256": "2042a024462d83d40a85bc7479db92aad601f22f64c9c077fb68eacda13ef30b",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_0a4db96cbae5",
+      "source_url": "https://www.medicaid.gov/medicaid/section-1115-demo/demonstration-and-waiver-list/index.html",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_0c2a853c8e09",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/#!tid=NED1CB367B2164265A42681E483A3CD93",
+      "raw_sha256": "a3cd9da438362ba39e50e1bce1e6919f39370a29aed48bb11c330638a4c54981",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_0c45ae33577b",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=se42.4.438_171&rgn=div8",
+      "raw_sha256": "cc47c732bd9ddd9a7622fe97834f32bf5c02c2517548bfae75d94af5e3456639",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_0db127295844",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&tpl=/ecfrbrowse/Title42/42cfrv4_02.tpl#0",
+      "raw_sha256": "dd68d1694506ef92c3fe49d17ba2b9ef71699ae3084a9c15b46b4c5cae487717",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_0f50b8af79fe",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/pbh-sect-4903.html",
+      "raw_sha256": "3995abb0e10da879118047972b1f6e9dab67aa837cecf8c151e33de799f29cb9",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_10a45871eba9",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_initial_denial_notice.pdf",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_12dc8c90c402",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/1396a",
+      "raw_sha256": "a87ce14869f6d0983b710b62976af594306476416f696f62c2b45b28ab78ebe0",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_13cf13b8f9d7",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=se42.4.438_1110&rgn=div8",
+      "raw_sha256": "f022a127a2bee37c9dd236beba97424f59207a30223eaec5319a18659c1f3212",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_15affed34501",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/pbh-sect-4914.html",
+      "raw_sha256": "b62184cce2e7a127e18f063c8b97fc7b14eb3cd17cd6717242800fffa17c7a32",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_1f1add621512",
+      "source_url": "https://www.nymedicaidchoice.com/",
+      "raw_sha256": "7289567d52ff87cb1960ee75c67bf3fff51d31a6f880c85e925e0f99481005c1",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_1f9aa023c17d",
+      "source_url": "https://codes.findlaw.com/ny/social-services-law/sos-sect-22.html",
+      "raw_sha256": "17d389883c002a2e753afe2ab351daf04bfa117a59475bc755d4090eaec326e8",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_241c3a5d7d48",
+      "source_url": "https://codes.findlaw.com/ny/social-services-law/sos-sect-365-a.html",
+      "raw_sha256": "dfdc3089dac4ab1b96f10c8b77b00218f0cd447aac6fc6fe0badb015b95e41e1",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_2602e2111cda",
+      "source_url": "https://www.health.ny.gov/health_care/medicaid/redesign/mrt90/mltc_policies.htm",
+      "raw_sha256": "2f9eb58f122f4b1cbb304116408b82e9ce7eea5bce86281c88db2da01596ac94",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_272cd9692d26",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/1395w-28",
+      "raw_sha256": "9e8138ded6dfd992bd52b3ad29b8044d3ffc4427d1623d7c478cbbcfd2018336",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_2de6ed7f67d8",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/complaints/index.htm",
+      "raw_sha256": "f9de56001e951a302faf3ac3bf3b5c9b839032ea6bbd81b5fcadf49d4fe1199e",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_2f699f59805b",
+      "source_url": "https://codes.findlaw.com/ny/social-services-law/sos-sect-364-j.html",
+      "raw_sha256": "5c9f61f70a8d8bec53acacd85cdaef269b1cc89dcd59a0494cc81a53909f1fc6",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_32134a530ca3",
+      "source_url": "https://govt.westlaw.com/nycrr/Document/I4fdbce1bcd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_32645b1bc197",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/1396d",
+      "raw_sha256": "4d15229c20ea2159fb1bb49bf12b6f9ff135298813a5d67c32f916f9c01fa70d",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_36848c4a42bc",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/pbh-sect-4403-d.html",
+      "raw_sha256": "867cc85451c7c1fc050fba9c2615a38b59615812ece1c05ca5e2db2108ee7bbf",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_3867f794b9a7",
+      "source_url": "https://govt.westlaw.com/nycrr/Browse/Home/NewYork/NewYorkCodesRulesandRegulations?guid=I82c80630b80f11dd9190c387f1d75965&originationContext=documenttoc&transitionType=Default&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_38c0e6329974",
+      "source_url": "https://example.invalid/redacted-source/customer_38c0e6329974",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_392aaec492be",
+      "source_url": "https://otda.ny.gov/hearings/",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_3c257bd6c96a",
+      "source_url": "https://govt.westlaw.com/nycrr/Document/Ic29b48a1bd1e11e0bbca0000845b8d3e?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)&bhcp=1",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_3cfa5fb5f181",
+      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12ad7cd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_3df3f3f955ee",
+      "source_url": "https://govt.westlaw.com/nycrr/Browse/Home/NewYork/NewYorkCodesRulesandRegulations?guid=I6899e800b80f11dd9190c387f1d75965&originationContext=documenttoc&transitionType=Default&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_3fe606652029",
+      "source_url": "https://www.health.ny.gov/health_care/medicaid/redesign/mrt90/hlth_plans_prov_prof.htm",
+      "raw_sha256": "81e96deb0ef3cb8017969598089f6faf3cb7acd81207c76683b25218e18e43db",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_41c53bb008d2",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_initial_reduce_services.pdf",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_488c2d4502b9",
+      "source_url": "https://www.health.ny.gov/health_care/medicaid/redesign/docs/cdpas_fi_plan_final_model_agreement.pdf",
+      "raw_sha256": "447561fd0463dd04a93a7aea0b55de3e0aeea3e3a3c4a4399fbbab90ffe99813",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_522215cff549",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/pbh-sect-17.html",
+      "raw_sha256": "cd7559e62f674045c6f82057811145098e09db92594284bbe1523a1f6224a783",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_56394c33f999",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/42-cfr-438_mmc_saa.pdf",
+      "raw_sha256": "74a80763867733a0655c293a3678f27e6c58465d9b0191dc3f87a497a76daec2",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_56ccc716b240",
+      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12aaacd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)&bhcp=1",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_577aadb2dc4e",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/chapter-7/subchapter-XVIII/part-C",
+      "raw_sha256": "86736052c8b16633347086a885d53f8bec279e8b64ab304085eb48a50e1a7246",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_5ac36550193a",
+      "source_url": "https://www.health.ny.gov/health_care/medicaid/redesign/mrt90/mltc_policy/docs/16-07.pdf",
+      "raw_sha256": "93f52d4d764dbe18b18f4ac4f701d6cdac528d46d2bc9cd52f5c85526f3ba8ad",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_6459b574d016",
+      "source_url": "https://www.health.ny.gov/health_care/medicaid/redesign/docs/cdpap_member_plan_mou_final.pdf",
+      "raw_sha256": "9e7f74f694e9a68b2c5457fd0ef7757eb4872df6c8a57ba3d1be9cd970d06cd9",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_6b57bced7eb6",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/#!tid=N6ED1F6CD77D047CFA8C808D3B836F085",
+      "raw_sha256": "f4ff12aa2f6200d5c1cd591b6a1138cfe7d7f96b73ec7e8e065047ece8990ec8",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_6b98c0973c27",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/pbh-sect-4904.html",
+      "raw_sha256": "7bde1bffae943e2a5861c81cf623435476fcffeeb195bc0862d105d905cfd708",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_6c8e85dee732",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=401b38b83df1e7c1aaaba5e86b0fc4da&mc=true&node=se42.4.440_140&rgn=div8",
+      "raw_sha256": "f7663549ddb3984ba89eff1604a8813a2f07150c9bb81a06143410dab8304a69",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_6d0e3690c6fd",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=sp42.4.438.f&rgn=div6",
+      "raw_sha256": "5bc98b4b3bd41b349d6cc45c71c9bac54f2014f0f5805bf0ae930cef87386a01",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_6dc7346292e8",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=4d0aaceaeb5cc744c34b9cac7a3a771d&mc=true&tpl=/ecfrbrowse/Title45/45cfr164_main_02.tpl",
+      "raw_sha256": "9c5e8f2e42940bcede3378d73cfec76d11bd3068b2a449ef5530aef665f01350",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_70906a0a4475",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=se42.4.438_154&rgn=div8",
+      "raw_sha256": "6e56b0cf5399e0514f17acb727556b1ad1f28326dec8f00e5631a0f9f533c034",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_71e2698e41fc",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-12-15_fair_hearing.pdf",
+      "raw_sha256": "dc3b1de9776cda7aaaffa1da46dfb68df50fdc98521791632581cf2ba338ddd8",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_73bba1ab8a15",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&tpl=/ecfrbrowse/Title42/42cfr422_main_02.tpl",
+      "raw_sha256": "22d37f70f633ecbfb837fe999900a43f3487454429e4bb834d4ddc0ca0c06178",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_747d54761d7a",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=se42.4.438_1100&rgn=div8",
+      "raw_sha256": "f7529cd181e226ccbe067ce327689d219f3c8fddb7e02149120b90db257cb7ce",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_76e4f56c1011",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/providers/docs/mmc_fhp_hiv-snp_harp_model_contract.pdf",
+      "raw_sha256": "ab2b8554f868589f47debd3d95afac119a200c7600965ef00ab5ed81d7e54722",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_7836f8972487",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/mltc/consumer_guides/",
+      "raw_sha256": "4ce5bb145b8fae0dab998a85e7b93731519650294e2719e8e963e8e676f58bee",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_7bc4824b42a5",
+      "source_url": "https://www.medicaid.gov/medicaid/managed-care/index.html",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_7c90212ed055",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/1395eee",
+      "raw_sha256": "2e693a48f893277ec7dc52ed84ec3131c7ee2dbe70dc69685fe3cccda3165b34",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_8039c5133232",
+      "source_url": "https://www.health.ny.gov/health_care/medicaid/redesign/mrt90/",
+      "raw_sha256": "ac3cb8b79ad13d5f1c989e37c3d8daf72a0b49581eb7baf73dfb0bfcd7aacf0d",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_8334ca603552",
+      "source_url": "https://www.hhs.gov/hipaa/for-professionals/index.html",
+      "raw_sha256": "76f79fef1eb1b2a9d373dc4179d386122bf545edd62b02319ececa6a611a5c17",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_875e2de95de3",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/chapter-7/subchapter-XI/part-C",
+      "raw_sha256": "1a896d4b47695eb8839a97723c9cfba5bfac670839fde22ae9eb0be59bca3e40",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_8abfc71257d2",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=se42.4.438_162&rgn=div8",
+      "raw_sha256": "1de9e8cc7f91c61ba215aeb108dddb610233a20d3ca1c3150394de6b40c9112e",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_8cfd1e295ae9",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/mltc/index.htm",
+      "raw_sha256": "1fb4e0eba9c0fb14adfbeaf99fae89e7f2ad842813ab8d78b0a01d7b70555d1e",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_8e8033eccb95",
+      "source_url": "https://www.health.ny.gov/health_care/medicaid/redesign/mrt90/cdpas.htm",
+      "raw_sha256": "51084e2b98b0c8408319aded4f50e89aee07fa20b0e920a7b011fca618d208e8",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_911cb5f2f66e",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/pbh-sect-4403-c.html",
+      "raw_sha256": "9c76f9003c67a30e091c6720590490deaf287e29fd84db9d2464f0f41499ae00",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_9398748f4255",
+      "source_url": "https://www.nymedicaidchoice.com/program-materials",
+      "raw_sha256": "aced5da03bcdd1b1598d7c20e662488816075a5faff027ff2d5c83b36b81b911",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_95da35de25ad",
+      "source_url": "https://govt.westlaw.com/nycrr/Document/I4fdbce2acd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_967384abce51",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/chapter-7/subchapter-XVIII/part-D",
+      "raw_sha256": "cbfc7ed596a6ec8ce87e58c188aaad1628f0c43f8e18ee3aae82c483e75f3f87",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_9683654d1e6c",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/2018-2-2_timeframe_comparison.htm",
+      "raw_sha256": "6ddb20851c0a868d8754bc4f9fb5d1d0a0cf4aca5172285f9825afbb4927fab1",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_9a582cdd3cd5",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=se42.4.438_1210&rgn=div8",
+      "raw_sha256": "2d758f3a2fe04551448f57aad6ba983bbd6909e16bc7a2eb90f64c8cc550f24c",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_9ee5d2492b47",
+      "source_url": "https://www.health.ny.gov/health_care/medicaid/redesign/mrt90/mltc_policy/docs/17-02.pdf",
+      "raw_sha256": "6de7e09b79c07a0f92e6f00fffcf17d2fde02f18ebccfddbec535c21c43ae2f2",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_9fc4b4d04b36",
+      "source_url": "https://www.cms.gov/Medicare/Prescription-Drug-Coverage/PrescriptionDrugCovGenIn/index",
+      "raw_sha256": "1a4f660bfe609ecaad84ce8277c5ac073dd1dd035fa4332cb9222b5f615dc842",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_a1f758ba259c",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/42_cfr_438.htm",
+      "raw_sha256": "61b5fb1002d1e13e1de5e3be6ca83b356e5b80012530dda59c0b8c30d10ce316",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_ab944d80f42d",
+      "source_url": "https://health.ny.gov/health_care/medicaid/redesign/mrt90/docs/2022-2026-map_model_contract.pdf",
+      "raw_sha256": "d249cae50a6de36f5d39a72358b482fd02bf3cc273717ca59ac8ebd2e7942117",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_aca19d1a8cb6",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=se42.4.438_1402&rgn=div8",
+      "raw_sha256": "c3fb8cd09a79add1b1ddcedaf95e136f2ab4109559cc24204631dd78f41adcc8",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_b14128eceeac",
+      "source_url": "https://govt.westlaw.com/nycrr/Browse/Home/NewYork/NewYorkCodesRulesandRegulations?guid=I1684af60b65611ddb903a4af59fec65a&originationContext=documenttoc&transitionType=Default&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_b209c2ae534d",
+      "source_url": "https://www.health.ny.gov/health_care/medicaid/redesign/docs/final_personal_care_guidelines.pdf",
+      "raw_sha256": "325b7fd38925e2cf747e98c0dedf889de232c9ac01b95cd5c443b0e90b18396b",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_b851dd3fa7d4",
+      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12abccd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_b8e1676d83c6",
+      "source_url": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Manuals/Downloads/Pub100_18.pdf",
+      "raw_sha256": "1ab3792b2009899a499613b90144ac6cdebb51087f656211cd1e247dfcd66cfd",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_b9589cfbd706",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&tpl=/ecfrbrowse/Title42/42cfr423_main_02.tpl",
+      "raw_sha256": "cc703f4fdf66046d0d00d94a60d1d7cf5ac990d2ebeee3e5199637dff3e4b9a1",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_bb48e39b4c78",
+      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12ab0cd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_bc4aa2d36132",
+      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12aadcd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_bc8e7ef89307",
+      "source_url": "http://www.wnylc.com/kb_wnylc/",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_bf6107958d5c",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=401b38b83df1e7c1aaaba5e86b0fc4da&mc=true&node=se42.4.440_1167&rgn=div8",
+      "raw_sha256": "de1fa95a0a8490ee95161ced9b095fce0e495d2f9f83883b6b3588f8849ad0aa",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_bf76a4a66e7a",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/pbh-sect-18.html",
+      "raw_sha256": "5fa855d99b0d34744c79389c9c003c6100ade4b2e0ef41f51775f09d9610a68c",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_c018e1f1d0a5",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_final_reduce_services.pdf",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_c0f1310313fc",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=401b38b83df1e7c1aaaba5e86b0fc4da&mc=true&node=se42.4.440_180&rgn=div8",
+      "raw_sha256": "ab97e2fe0056af0ea65cf9021a7f096678fe84282cd74140afacfd9184b4eb6f",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_c19c11b9ab3a",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/mltc/reports.htm",
+      "raw_sha256": "8b089eaab6ed0c39ba7cf54e5dcada81c04b6c44c6b545910342ffeece2072f3",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_c37642dd36ce",
+      "source_url": "https://www.health.ny.gov/health_care/consumer_information/",
+      "raw_sha256": "776b04db692dfcd000098db2a74e41c2a08243e79516020968047b5eed1fb842",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_c9c27516767e",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&tpl=/ecfrbrowse/Title42/42cfr438_main_02.tpl",
+      "raw_sha256": "37d3bd5f577f6012c8832c46bf6ca7f3715428afe07d60b3fa6b8e06d20a1be3",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_ca434f77d56e",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/pbh-sect-4910.html",
+      "raw_sha256": "6985e4a5d2e19c48c097e92c8ae4a04b7d54633bdbd36c2949011e162c7ee564",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_cc19806d1b69",
+      "source_url": "https://govt.westlaw.com/nycrr/Browse/Home/NewYork/NewYorkCodesRulesandRegulations?guid=I075422a0b65611ddb903a4af59fec65a&originationContext=documenttoc&transitionType=Default&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_ce220014a729",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=se42.4.438_1208&rgn=div8",
+      "raw_sha256": "b62c2606bb83116b85aecffdf9973d81b735ae0865536da27a494a96f83f7ee4",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_d31e36114ffc",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/",
+      "raw_sha256": "f475b8612f2b4b10fab7af793d79d908fcb5db63c0aa4defa7d80fd795114688",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_d505f35ff23e",
+      "source_url": "https://health.ny.gov/health_care/medicaid/redesign/mrt90/docs/pace_model_contract.pdf",
+      "raw_sha256": "4f24e58399619677567e3ac08a6b97854b1fa31ca8ec5c6f3cd3972fece3b7d0",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_d62eb36c8e54",
+      "source_url": "https://govt.westlaw.com/nycrr/Document/I4fdbce18cd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_e06827260997",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_final_denial_notice.pdf",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_e1be16d77f17",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/#!tid=NB7509ABE4AAF4392976DF035D9F016EC",
+      "raw_sha256": "15d64ec4b0beb1c4bb2ab1dd68c12cc985e8b5a5886c06cb7f4e22d8ccb2392b",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_e3f16b93c7d2",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=401b38b83df1e7c1aaaba5e86b0fc4da&mc=true&tpl=/ecfrbrowse/Title42/42cfr440_main_02.tpl",
+      "raw_sha256": "6f9381f18d8daacf9172f213c84a79f3f88af94cc2ca74f5bd6e55e04d667449",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_e5a227aa77e0",
+      "source_url": "https://www.health.ny.gov/health_care/medicaid/redesign/mrt90/mltc_policy/docs/16-06.pdf",
+      "raw_sha256": "5a9e774b496c2cba9fbb9316aabbb9b63ede11c17736cc264bfcd54027abaab6",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_e7d91f09af3e",
+      "source_url": "https://www.cms.gov/Regulations-and-Guidance/Guidance/Manuals/Internet-Only-Manuals-IOMs-Items/CMS019326",
+      "raw_sha256": "1e03554edcc8f755797684c371b71d7be363b3bc5fd0527f6ec3de96c9462d83",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_ea06326e6640",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/1396u-2",
+      "raw_sha256": "05dae6e518f3711f69cc56990b1112d904caef7c06dc3061b468bcc7eee3527f",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_eb71f4ade168",
+      "source_url": "https://govt.westlaw.com/nycrr/Browse/Home/NewYork/NewYorkCodesRulesandRegulations?guid=I2eeeaf60b65611ddb903a4af59fec65a&originationContext=documenttoc&transitionType=Default&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_ee654fdc7de4",
+      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12aa1cd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
+      "raw_sha256": null,
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_f1e78342577e",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/pbh-sect-4403-f.html",
+      "raw_sha256": "4a3a69999dd28886fe3362b41aa38a5ce8a41d70f8c1b45db34b50f43f791d77",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_f2eecd7a913a",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=se42.4.438_156&rgn=div8",
+      "raw_sha256": "4d25c678cab562c7c6b290ba915029668aeec4ccd6b337eff484d0a7e792fa86",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_f32090cf9325",
+      "source_url": "https://health.ny.gov/health_care/medicaid/redesign/mrt90/2023/docs/part_cap_model.pdf",
+      "raw_sha256": "db494e31e6be850e12464d3cb0980d30cda5a5367f9f0d0751da076466dd5b86",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_f6b0e4ca3acb",
+      "source_url": "https://codes.findlaw.com/ny/public-health-law/#!tid=N7690657542E64C0D934A861EB0DC00A6",
+      "raw_sha256": "cce6379271835e287ca097d61231fdaf5f0815142613ef1a8ce03e24d6639d18",
+      "retrieval_allowed": false,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_f751a39bbc0f",
+      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/42-cfr-438_faqs.htm",
+      "raw_sha256": "962405a97c8951e1a935b14ab786df55e608e17a7eaa7eb2366c3e33a1c4ce40",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_fada76c6f16a",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=401b38b83df1e7c1aaaba5e86b0fc4da&mc=true&node=sp42.4.431.e&rgn=div6",
+      "raw_sha256": "3f9eabcd26ea0cc8d5de800c070c5d65389c16f19ccc0ff784085458c948a42c",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_fb172bd24f8a",
+      "source_url": "https://www.law.cornell.edu/uscode/text/42/1396n",
+      "raw_sha256": "e1a31e3cd46d95b9249ec0e94f1cc186412ec5fd1ac8b12c9fa3321c0ab5b09c",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_fb7312b26daa",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=b84fa0b805232effa7e6099227de32ee&mc=true&node=se42.4.438_168&rgn=div8",
+      "raw_sha256": "56a62039df2b68cd709db2f9d0ec26f8cac5d678f9c7ca57826892701c9e3b49",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "customer_fe2283a6b92e",
+      "source_url": "https://www.ecfr.gov/cgi-bin/text-idx?SID=401b38b83df1e7c1aaaba5e86b0fc4da&mc=true&node=se42.4.440_170&rgn=div8",
+      "raw_sha256": "3ace66d407fb41ddf3494da6f14ab4c23ed217834da2946c5ff868c662980cea",
+      "retrieval_allowed": true,
+      "version_status": "customer_supplied_links_not_historical_document_bytes"
+    }
+  ]
+}

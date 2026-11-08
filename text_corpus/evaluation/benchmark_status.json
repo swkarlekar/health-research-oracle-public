@@ -1,0 +1,11 @@
+{
+  "status": "awaiting_client_benchmark",
+  "client_query_count": 0,
+  "client_reference_answer_count": 0,
+  "synthetic_queries_are_not_client_benchmark": true,
+  "instructions": [
+    "Keep any eventual client evaluation split held out from fine-tuning.",
+    "Gold labels should include scope, expected supporting passages, material qualifications and expected uncertainty state.",
+    "Existing tests verify extraction, offsets, citation identity and harness behavior; they do not establish legal-answer quality."
+  ]
+}

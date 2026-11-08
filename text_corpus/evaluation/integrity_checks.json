@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "checked_at": "2026-11-06T22:29:25.244754+00:00",
+  "corpus_file_sha256": "2f46ae00ab72cf596929aad29c51fda79ddbba7fb350c68c5c4fde5138512c7e",
+  "automated_tests_run": 47,
+  "test_failures": 0,
+  "test_errors": 0,
+  "test_skipped": 0,
+  "actual_corpus_table_representations_audited": 337,
+  "actual_corpus_table_cells_audited": 15120,
+  "table_cell_offset_errors": 0,
+  "table_cell_error_examples": [],
+  "scope": "Mechanical extraction, quotation, citation, provenance, and harness integrity; not legal-answer quality or client benchmark performance.",
+  "model_inference_performed": false,
+  "client_benchmark_status": "awaiting_client_benchmark"
+}

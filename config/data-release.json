@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "tag": "data-2026-11-08",
+  "asset": "oracle-data-public-f63013298e2f-v2.zip",
+  "sha256": "97450d5d93087e3eb0dfd84e52ebccf11c8c643ab463c2d0e851b1b012abec42",
+  "archive_bytes": 207996811,
+  "snapshot_sha256": "f63013298e2f9473803a2c9ba6b3534e2f8f15649c89fbc684ab2bd0d418fd25",
+  "release_url": "https://github.com/swkarlekar/health-research-oracle-public/releases/tag/data-2026-11-08",
+  "repo": "swkarlekar/health-research-oracle-public"
+}

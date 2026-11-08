@@ -1,0 +1,93 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "REVIEW ONLY: research oracle S3 and Bedrock KB with S3 Vectors. Deployment requires explicit paid-service approval.",
+  "Parameters": {
+    "PaidResourcesApproved": {"Type": "String", "Default": "no", "AllowedValues": ["no", "yes"], "Description": "Set yes only after the user approves this exact deployment and its ongoing costs."},
+    "EmbeddingModelId": {"Type": "String", "Default": "amazon.titan-embed-text-v2:0"},
+    "EmbeddingDimensions": {"Type": "Number", "Default": 1024, "AllowedValues": [256, 512, 1024]},
+    "IngestionPrefix": {"Type": "String", "Default": "corpus/", "AllowedPattern": "[a-z0-9][a-z0-9/-]*/"}
+  },
+  "Conditions": {"Approved": {"Fn::Equals": [{"Ref": "PaidResourcesApproved"}, "yes"]}},
+  "Resources": {
+    "Documents": {
+      "Type": "AWS::S3::Bucket", "Condition": "Approved",
+      "DeletionPolicy": "Retain", "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "BucketEncryption": {"ServerSideEncryptionConfiguration": [{"ServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]},
+        "PublicAccessBlockConfiguration": {"BlockPublicAcls": true, "BlockPublicPolicy": true, "IgnorePublicAcls": true, "RestrictPublicBuckets": true},
+        "OwnershipControls": {"Rules": [{"ObjectOwnership": "BucketOwnerEnforced"}]},
+        "Tags": [{"Key": "Project", "Value": "health-research-oracle"}]
+      }
+    },
+    "DocumentsPolicy": {
+      "Type": "AWS::S3::BucketPolicy", "Condition": "Approved",
+      "Properties": {
+        "Bucket": {"Ref": "Documents"},
+        "PolicyDocument": {"Version": "2012-10-17", "Statement": [{
+          "Effect": "Deny", "Principal": "*", "Action": "s3:*",
+          "Resource": [{"Fn::GetAtt": ["Documents", "Arn"]}, {"Fn::Sub": "${Documents.Arn}/*"}],
+          "Condition": {"Bool": {"aws:SecureTransport": "false"}}
+        }]}
+      }
+    },
+    "Vectors": {
+      "Type": "AWS::S3Vectors::VectorBucket", "Condition": "Approved",
+      "DeletionPolicy": "Retain", "UpdateReplacePolicy": "Retain",
+      "Properties": {"Tags": [{"Key": "Project", "Value": "health-research-oracle"}]}
+    },
+    "VectorIndex": {
+      "Type": "AWS::S3Vectors::Index", "Condition": "Approved",
+      "DeletionPolicy": "Retain", "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "VectorBucketArn": {"Ref": "Vectors"}, "IndexName": "research-passages",
+        "DataType": "float32", "Dimension": {"Ref": "EmbeddingDimensions"}, "DistanceMetric": "cosine",
+        "MetadataConfiguration": {"NonFilterableMetadataKeys": ["AMAZON_BEDROCK_TEXT", "AMAZON_BEDROCK_METADATA"]}
+      }
+    },
+    "KnowledgeBaseRole": {
+      "Type": "AWS::IAM::Role", "Condition": "Approved",
+      "Properties": {
+        "AssumeRolePolicyDocument": {"Version": "2012-10-17", "Statement": [{
+          "Effect": "Allow", "Principal": {"Service": "bedrock.amazonaws.com"}, "Action": "sts:AssumeRole",
+          "Condition": {"StringEquals": {"aws:SourceAccount": {"Ref": "AWS::AccountId"}},
+                        "ArnLike": {"aws:SourceArn": {"Fn::Sub": "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:knowledge-base/*"}}}
+        }]},
+        "Policies": [{"PolicyName": "ReadSelectedCorpusAndEmbed", "PolicyDocument": {"Version": "2012-10-17", "Statement": [
+          {"Effect": "Allow", "Action": "s3:ListBucket", "Resource": {"Fn::GetAtt": ["Documents", "Arn"]},
+           "Condition": {"StringLike": {"s3:prefix": [{"Fn::Sub": "${IngestionPrefix}*"}]}}},
+          {"Effect": "Allow", "Action": "s3:GetObject", "Resource": {"Fn::Sub": "${Documents.Arn}/${IngestionPrefix}*"}},
+          {"Effect": "Allow", "Action": "bedrock:InvokeModel", "Resource": {"Fn::Sub": "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${EmbeddingModelId}"}},
+          {"Effect": "Allow", "Action": ["s3vectors:PutVectors", "s3vectors:GetVectors", "s3vectors:DeleteVectors", "s3vectors:QueryVectors", "s3vectors:GetIndex"],
+           "Resource": {"Ref": "VectorIndex"}}
+        ]}}]
+      }
+    },
+    "KnowledgeBase": {
+      "Type": "AWS::Bedrock::KnowledgeBase", "Condition": "Approved",
+      "Properties": {
+        "Name": {"Fn::Sub": "${AWS::StackName}-oracle"}, "RoleArn": {"Fn::GetAtt": ["KnowledgeBaseRole", "Arn"]},
+        "KnowledgeBaseConfiguration": {"Type": "VECTOR", "VectorKnowledgeBaseConfiguration": {
+          "EmbeddingModelArn": {"Fn::Sub": "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${EmbeddingModelId}"},
+          "EmbeddingModelConfiguration": {"BedrockEmbeddingModelConfiguration": {"Dimensions": {"Ref": "EmbeddingDimensions"}, "EmbeddingDataType": "FLOAT32"}}
+        }},
+        "StorageConfiguration": {"Type": "S3_VECTORS", "S3VectorsConfiguration": {"IndexArn": {"Ref": "VectorIndex"}}}
+      }
+    },
+    "DataSource": {
+      "Type": "AWS::Bedrock::DataSource", "Condition": "Approved",
+      "Properties": {
+        "KnowledgeBaseId": {"Ref": "KnowledgeBase"}, "Name": "canonical-passages", "DataDeletionPolicy": "RETAIN",
+        "DataSourceConfiguration": {"Type": "S3", "S3Configuration": {
+          "BucketArn": {"Fn::GetAtt": ["Documents", "Arn"]}, "InclusionPrefixes": [{"Ref": "IngestionPrefix"}]
+        }},
+        "VectorIngestionConfiguration": {"ChunkingConfiguration": {"ChunkingStrategy": "NONE"}}
+      }
+    }
+  },
+  "Outputs": {
+    "DocumentBucket": {"Condition": "Approved", "Value": {"Ref": "Documents"}},
+    "KnowledgeBaseId": {"Condition": "Approved", "Value": {"Ref": "KnowledgeBase"}},
+    "DataSourceId": {"Condition": "Approved", "Value": {"Fn::GetAtt": ["DataSource", "DataSourceId"]}},
+    "VectorIndexArn": {"Condition": "Approved", "Value": {"Ref": "VectorIndex"}}
+  }
+}

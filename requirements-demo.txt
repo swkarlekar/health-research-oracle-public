@@ -1,0 +1,3 @@
+# Chat, Bedrock, verified local data and PDF viewing. No local model weights.
+boto3==1.43.126
+PyMuPDF==1.26.6

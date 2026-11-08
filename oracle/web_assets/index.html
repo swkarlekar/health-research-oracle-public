@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Research Oracle · Local workspace</title>
+<link rel="icon" href="/cssny-logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+<div class="workspace">
+<aside class="sidebar">
+  <a class="brand" href="/" aria-label="Research Oracle home"><span class="brand-mark">o<span>r</span></span><span>research<br><strong>oracle</strong></span></a>
+  <button id="new-chat" class="primary new-chat"><span aria-hidden="true">＋</span> New research</button>
+  <details class="sidebar-examples"><summary>Example questions</summary><select id="examples" aria-label="Choose an example question"><option value="">Choose a scenario…</option></select><button id="saved-example" class="text-button" hidden>Open saved example ↗</button></details>
+  <div class="sidebar-label">YOUR RESEARCH</div>
+  <nav id="history" aria-label="Research history"></nav>
+  <div class="sidebar-bottom"><span class="local-dot"></span><div><strong>Local workspace</strong><small>History stays on this computer</small></div></div>
+</aside>
+<main>
+  <header class="topbar"><button id="mobile-menu" class="icon-button" aria-label="Toggle research history">☰</button><span id="conversation-title">New research</span><a class="cssny-link" href="https://www.cssny.org/" target="_blank" rel="noopener noreferrer" aria-label="Learn more about Community Service Society of New York (CSSNY), opens in a new tab"><img src="/cssny-logo.svg" alt="Community Service Society of New York"><span>CSSNY ↗</span></a><span id="provider-badge" class="mode-badge">Bedrock</span><button id="open-settings" class="icon-button" aria-label="Open model settings" title="Model settings">⚙</button></header>
+  <div id="chat-scroll" class="chat-scroll">
+    <section id="welcome" class="welcome">
+      <h1>Welcome, advocate!</h1>
+      <p>Ask about New York Medicaid program rules. Explore quoted sources and read the documents in context.</p>
+    </section>
+    <section id="messages" class="messages" aria-label="Research conversation" aria-live="polite"></section>
+  </div>
+  <div class="composer-area">
+    <div class="composer-width">
+      <div id="context-row" class="context-row" hidden><label><input id="use-history" type="checkbox" checked> Use earlier user questions as context</label></div>
+      <form id="question-form" class="composer">
+        <textarea id="question" rows="3" maxlength="1600" placeholder="Ask a research question or describe a general scenario…" aria-label="Research question" required></textarea>
+        <div class="composer-toolbar"><button id="scope-toggle" class="scope-button" type="button" aria-expanded="false">New York Medicaid <span aria-hidden="true">⌄</span></button><span id="model-label" class="model-label">Qwen3 32B</span><button id="send" class="send-button" type="submit" disabled aria-label="Send research question">↑</button></div>
+      </form>
+      <div id="scope-panel" class="scope-panel" hidden>
+        <label>Program / jurisdiction<input id="program" value="New York Medicaid" maxlength="160"></label>
+        <label>Rules as of<input id="research-date" type="date" aria-describedby="date-help"></label>
+        <p id="date-help" class="field-note">Choose a date for historical research. Leave blank if unspecified; source dates still need verification.</p>
+      </div>
+      <p class="composer-note">Use general scenarios without identifying information. Answers are limited to the supplied corpus.</p>
+    </div>
+  </div>
+</main>
+</div>
+<div id="toast" class="toast" role="alert" hidden></div>
+<dialog id="settings-dialog" class="settings-dialog" aria-labelledby="settings-heading">
+  <header class="panel-header"><div><div class="eyebrow">YOUR WORKSPACE</div><h2 id="settings-heading">Model settings</h2></div><button id="close-settings" class="icon-button" aria-label="Close settings">×</button></header>
+  <form id="settings-form" class="settings-content">
+    <p class="settings-intro">Retrieval uses the shared local documents and Titan vectors. Choose where the answer is generated.</p>
+    <label>Answer model provider<select id="settings-provider"><option value="bedrock">Amazon Bedrock</option><option value="ollama">Ollama</option><option value="lmstudio">LM Studio</option><option value="openai-local">Other local OpenAI-compatible server</option></select></label>
+    <div id="bedrock-fields"><label>Bedrock model<select id="settings-bedrock-model"></select></label><p id="settings-price" class="field-note"></p></div>
+    <div id="local-fields" hidden>
+      <label>Local server URL<input id="settings-local-url" type="url" value="http://127.0.0.1:11434" spellcheck="false"></label>
+      <button id="refresh-local-models" type="button" class="small-button">Find local models</button>
+      <label>Installed model<select id="settings-local-model"><option value="">Find models to choose one…</option></select></label>
+      <p id="local-model-note" class="field-note">Discovery lists models without loading or downloading them. A GPU is optional; CPU inference can be slow.</p>
+      <label>Local context budget<select id="settings-context"><option value="8192">8,192 tokens</option><option value="16384">16,384 tokens</option><option value="32768" selected>32,768 tokens</option></select></label>
+      <p class="field-note">This controls Ollama context. Other servers keep their own context settings; the app rejects oversized requests before inference. Large models are blocked on machines with limited memory.</p>
+      <label class="settings-check"><input id="settings-local-ack" type="checkbox"> If model size is unavailable, I have checked that it fits in memory in my local application.</label>
+    </div>
+    <fieldset class="settings-aws"><legend>AWS account and spending</legend>
+      <p class="field-note">New questions need a Titan query embedding even with a local answer model. Cached query vectors are reused. Region: US East (N. Virginia).</p>
+      <label>AWS SSO profile<input id="settings-profile" value="oracle" maxlength="80" spellcheck="false" autocomplete="off"></label>
+      <button id="check-aws" type="button" class="small-button">Check account and available models</button>
+      <p id="settings-account" class="field-note">Uses local AWS credentials. No access keys are entered or shared here.</p>
+      <label>New session allowance (USD)<input id="settings-allowance" type="number" min="0.01" max="10" step="0.01" value="0.25"></label>
+      <label class="settings-check"><input id="settings-authorize" type="checkbox"> I explicitly authorize paid Titan query embeddings and, when selected, Bedrock generation on the displayed account, up to this allowance for four hours.</label>
+      <p id="settings-budget" class="field-note"></p>
+      <p class="field-note">Spending controls apply on this computer. There is no automatic fallback to another model.</p>
+    </fieldset>
+    <p id="settings-error" class="failure" role="alert" hidden></p>
+    <footer class="settings-actions"><button id="disable-aws" type="button" class="small-button">Disable paid AWS calls</button><button id="save-settings" class="primary" type="submit">Save settings</button></footer>
+  </form>
+</dialog>
+<dialog id="debug-dialog" class="debug-dialog" aria-labelledby="debug-heading">
+  <header class="panel-header"><div><div class="eyebrow">BEHIND THE RESPONSE</div><h2 id="debug-heading">Research debug report</h2></div><button id="close-debug" class="icon-button" aria-label="Close debug report">×</button></header>
+  <div id="debug-content" class="debug-content"></div>
+</dialog>
+<dialog id="source-dialog" class="source-dialog" aria-labelledby="source-heading">
+  <header class="source-header"><div><div class="eyebrow">SOURCE DOCUMENT</div><h2 id="source-heading">Loading source…</h2></div><button id="close-source" class="icon-button" aria-label="Close source viewer">×</button></header>
+  <div class="source-toolbar"><div class="page-controls"><button id="previous-page" class="icon-button" aria-label="Previous PDF page">‹</button><label>Page <input id="page-number" type="number" min="1" aria-label="PDF page number"></label><span id="page-count"></span><button id="next-page" class="icon-button" aria-label="Next PDF page">›</button></div><div class="source-tools"><button id="jump-citation" class="text-button">Jump to citation</button><button id="toggle-highlights" class="small-button" aria-pressed="true">Highlights on</button><button id="zoom" class="small-button" aria-pressed="false">Zoom in</button><a id="original-link" class="small-button" target="_blank" rel="noopener noreferrer">Open original ↗</a></div></div>
+  <div class="source-layout"><div id="document-pages" class="document-pages" aria-label="Scrollable source document"></div><aside class="quote-panel"><div class="eyebrow">CITED PASSAGE</div><div id="highlight-note" class="highlight-note"></div><blockquote id="selected-quote"></blockquote><a id="official-link" target="_blank" rel="noopener noreferrer">Official source ↗</a><p class="viewer-footnote">The document shown is the saved corpus copy. Highlights locate matching text; they do not verify its legal applicability.</p></aside></div>
+</dialog>
+</body>
+</html>

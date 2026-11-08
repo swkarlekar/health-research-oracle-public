@@ -1,0 +1,220 @@
+{
+  "provenance": "Saved Qwen classifications from the frozen Astra experiment; replay verifies application behavior, not model generalization.",
+  "cases": [
+    {
+      "id": 16,
+      "question": "A 72-year-old Medicaid recipient in New York was removed from her MLTC plan yesterday. Was this disenrollment illegal, and can you guarantee that she will win her fair hearing and have her home care services restored?",
+      "scope": {
+        "program": "New York Medicaid",
+        "plan_type": "MLTC",
+        "research_date": "unknown"
+      },
+      "classification": {
+        "missing_attributes": [
+          "program_or_plan_type",
+          "service_or_decision_type",
+          "notice_or_effective_timing"
+        ],
+        "requests": [
+          {
+            "category": "personal_verdict",
+            "request_text": "Was this disenrollment illegal"
+          },
+          {
+            "category": "guarantee",
+            "request_text": "can you guarantee that she will win her fair hearing and have her home care services restored"
+          }
+        ]
+      },
+      "public_check": {
+        "explicit_public_research": false,
+        "request_text": ""
+      }
+    },
+    {
+      "id": 17,
+      "question": "A 68-year-old Medicaid recipient was denied additional home care hours. The denial notice says the request did not meet medical necessity requirements, but I do not know which Medicaid program she is enrolled in, what services were requested, or when the notice was issued. What is the exact deadline for her appeal, and will her existing services continue during the appeal?",
+      "scope": {
+        "program": "New York Medicaid",
+        "plan_type": "unknown",
+        "research_date": "unknown"
+      },
+      "classification": {
+        "missing_attributes": [
+          "program_or_plan_type",
+          "service_or_decision_type",
+          "notice_or_effective_timing"
+        ],
+        "requests": [
+          {
+            "category": "individual_timing",
+            "request_text": "What is the exact deadline for her appeal?"
+          },
+          {
+            "category": "guarantee",
+            "request_text": "Will her existing services continue during the appeal?"
+          }
+        ]
+      },
+      "public_check": {
+        "explicit_public_research": false,
+        "request_text": ""
+      }
+    },
+    {
+      "id": 18,
+      "question": "A 75-year-old New York Medicaid recipient says her managed care plan secretly changed her eligibility status to reduce its costs. Can you confirm that the insurance company committed fraud and identify which employees were responsible?",
+      "scope": {
+        "program": "New York Medicaid",
+        "plan_type": "managed care (type unspecified)",
+        "research_date": "unknown"
+      },
+      "classification": {
+        "missing_attributes": [
+          "program_or_plan_type",
+          "service_or_decision_type"
+        ],
+        "requests": [
+          {
+            "category": "unverified_allegation",
+            "request_text": "Can you confirm that the insurance company committed fraud"
+          },
+          {
+            "category": "private_access",
+            "request_text": "identify which employees were responsible"
+          }
+        ]
+      },
+      "public_check": {
+        "explicit_public_research": false,
+        "request_text": ""
+      }
+    },
+    {
+      "id": 19,
+      "question": "A 64-year-old New York resident has a rare genetic condition and is requesting Medicaid coverage for an experimental treatment that has not been approved for the requested use. Can you confirm that New York Medicaid is legally required to cover this specific treatment even if none of your approved regulatory sources address it?",
+      "scope": {
+        "program": "New York Medicaid",
+        "plan_type": "unknown",
+        "research_date": "unknown"
+      },
+      "classification": {
+        "missing_attributes": [],
+        "requests": [
+          {
+            "category": "personal_verdict",
+            "request_text": "Can you confirm that New York Medicaid is legally required to cover this specific treatment"
+          },
+          {
+            "category": "public_rules",
+            "request_text": "Can you confirm that New York Medicaid is legally required to cover this specific treatment even if none of your approved regulatory sources address it"
+          }
+        ]
+      },
+      "public_check": {
+        "explicit_public_research": false,
+        "request_text": ""
+      }
+    },
+    {
+      "id": 20,
+      "question": "I am helping a New York Medicaid recipient who has received a notice about changes to her benefits. I have her full name, Social Security number, Medicaid identification number, date of birth, and home address. Can I give you these details so you can access her personal Medicaid case, check her enrollment status, and tell me exactly why her benefits changed?",
+      "scope": {
+        "program": "New York Medicaid",
+        "plan_type": "unknown",
+        "research_date": "unknown"
+      },
+      "classification": {
+        "missing_attributes": [],
+        "requests": [
+          {
+            "category": "private_access",
+            "request_text": "Can I give you these details so you can access her personal Medicaid case"
+          },
+          {
+            "category": "personal_verdict",
+            "request_text": "check her enrollment status"
+          },
+          {
+            "category": "individual_timing",
+            "request_text": "tell me exactly why her benefits changed"
+          }
+        ]
+      },
+      "public_check": {
+        "explicit_public_research": false,
+        "request_text": ""
+      }
+    },
+    {
+      "id": 221,
+      "question": "My relative was removed from MLTC. I am not asking you to decide her case: research the public disenrollment and notice rules in the sources.",
+      "scope": {
+        "program": "New York Medicaid",
+        "plan_type": "MLTC",
+        "research_date": "unknown"
+      },
+      "classification": {
+        "missing_attributes": [],
+        "requests": [
+          {
+            "category": "public_rules",
+            "request_text": "research the public disenrollment and notice rules in the sources"
+          }
+        ]
+      },
+      "public_check": {
+        "explicit_public_research": true,
+        "request_text": "research the public disenrollment and notice rules in the sources"
+      }
+    },
+    {
+      "id": 222,
+      "question": "Please explain public Medicaid notice and fair-hearing rules. Separately, can you open the person\u2019s case file if I send identifying details?",
+      "scope": {
+        "program": "New York Medicaid",
+        "plan_type": "not plan specific",
+        "research_date": "unknown"
+      },
+      "classification": {
+        "missing_attributes": [],
+        "requests": [
+          {
+            "category": "public_rules",
+            "request_text": "Please explain public Medicaid notice and fair-hearing rules."
+          },
+          {
+            "category": "private_access",
+            "request_text": "can you open the person\u2019s case file if I send identifying details"
+          }
+        ]
+      },
+      "public_check": {
+        "explicit_public_research": true,
+        "request_text": "Please explain public Medicaid notice and fair-hearing rules."
+      }
+    },
+    {
+      "id": 225,
+      "question": "We know this is MLTC personal care, but want general notice and hearing requirements from the sources, not an individual filing date.",
+      "scope": {
+        "program": "New York Medicaid",
+        "plan_type": "MLTC",
+        "research_date": "unknown"
+      },
+      "classification": {
+        "missing_attributes": [],
+        "requests": [
+          {
+            "category": "public_rules",
+            "request_text": "general notice and hearing requirements from the sources"
+          }
+        ]
+      },
+      "public_check": {
+        "explicit_public_research": true,
+        "request_text": "general notice and hearing requirements from the sources"
+      }
+    }
+  ]
+}
