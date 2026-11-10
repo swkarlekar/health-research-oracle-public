@@ -1,4 +1,4 @@
-# Technical setup and architecture
+# TRACE technical setup and architecture
 
 Start with the [main README](README.md) for the demo workflow. The supported demo runs from a source checkout on each collaborator's laptop; it does not require deploying an AWS Knowledge Base or running a hosted application.
 

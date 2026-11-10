@@ -11,10 +11,10 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 [hidden]{display:none!important}
 .workspace{display:grid;grid-template-columns:252px minmax(0,1fr);height:100dvh;overflow:hidden}
 .sidebar{display:flex;flex-direction:column;background:#f1f4ee;border-right:1px solid var(--line);padding:30px 19px 20px;min-height:0}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);line-height:1.1;font-size:19px;letter-spacing:-.4px;padding:0 9px 33px}
-.brand strong{font-weight:600}
-.brand-mark{height:44px;width:44px;border:1px solid #bfd0c5;border-radius:13px;display:flex;align-items:center;justify-content:center;color:var(--teal);font:36px Georgia,serif;position:relative}
-.brand-mark span{font-size:25px;margin-left:-5px;margin-top:9px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);line-height:1.1;padding:0 9px 33px}
+.brand strong{font:28px Georgia,"Times New Roman",serif;letter-spacing:1.4px}
+.brand small{display:block;font-size:10px;letter-spacing:.3px;color:var(--muted);margin-top:6px}
+.brand-mark{height:48px;width:48px;flex-shrink:0}
 .primary{background:var(--teal);color:white;border:0;border-radius:9px;padding:11px 15px;font-weight:550}
 .primary:hover{background:var(--deep)}
 .new-chat{display:flex;align-items:center;gap:10px;text-align:left}
@@ -70,7 +70,7 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0}
 .user-message{background:#edf1e9;border:1px solid #e2e8dd;border-radius:13px 13px 3px 13px;margin-left:52px;padding:18px 22px;white-space:pre-wrap;font-size:14px}
 .answer{margin-top:24px}
 .answer-label{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:600;color:#43665d;margin-bottom:15px}
-.answer-symbol{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font:22px Georgia,serif;border:1px solid #cddbcf;border-radius:7px}
+.answer-symbol{width:28px;height:28px;object-fit:contain}
 .answer-label small{margin-left:auto;font-size:10px;font-weight:400;color:#8a948d}
 .status-chip{display:inline-block;font-size:10px;padding:3px 8px;border-radius:5px;background:var(--soft);color:var(--deep);font-weight:600}
 .status-chip.qualified{background:var(--amber-bg);color:var(--amber)}
@@ -190,6 +190,9 @@ dialog::backdrop{background:#16352b66;backdrop-filter:blur(3px)}
 }
 /* A quiet landing page; examples remain available without competing with the query. */
 .welcome{max-width:780px;padding:110px 40px 50px;text-align:center}
+.welcome-brand{display:flex;align-items:center;justify-content:center;gap:13px;color:var(--teal);margin-bottom:25px}
+.welcome-brand img{flex-shrink:0}
+.welcome-brand span{font:38px Georgia,"Times New Roman",serif;letter-spacing:3px}
 .welcome h1{font-size:42px;line-height:1.2;letter-spacing:-1px;margin:12px 0 18px}
 .welcome>p{max-width:490px;margin:0 auto;color:var(--muted);font-size:14px}
 .sidebar-examples{font-size:11px;color:#6b8073;margin:16px 9px 0}

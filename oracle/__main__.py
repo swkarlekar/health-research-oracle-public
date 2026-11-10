@@ -95,7 +95,7 @@ def _select_question(args):
 
 
 def _parser():
-    parser = argparse.ArgumentParser(description='Research oracle; defaults are local and AWS is approval-gated')
+    parser = argparse.ArgumentParser(description='TRACE research assistant; defaults are local and AWS is approval-gated')
     parser.add_argument('--db', type=Path, default=ROOT / 'text_corpus/processed/corpus.sqlite')
     parser.add_argument('--registry', type=Path, default=ROOT / 'config/sources.json')
     parser.add_argument('--graph', type=Path, default=ROOT / 'artifacts/relationships.sqlite')

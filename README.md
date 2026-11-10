@@ -1,10 +1,14 @@
-# Health research oracle
+# TRACE
+
+**Trusted Research for Advocates with Citations & Evidence**
+
+<img src="oracle/web_assets/trace-logo.svg" width="80" alt="TRACE logo, a pencil tracing a heart">
 
 **[▶ Watch the demo video](https://github.com/swkarlekar/health-research-oracle-public/releases/download/demo-video-2026-11-08/design_sprint_demo_video.mov)** (MOV download, 119 MiB)
 
 A research assistant for public health insurance advocates, based on the Community Service Society of New York (CSSNY) design brief. Ask a question in plain language, inspect the supporting quotations, and open cited documents inside the chat interface with highlighted passages. The advocate remains responsible for interpreting the rules and applying them to a client's situation.
 
-![Welcome page with an example research question and CSSNY header](docs/screenshots/IMG_8305.png)
+![Earlier demo welcome page with an example research question and CSSNY header](docs/screenshots/IMG_8305.png)
 
 The broader design covers public health insurance. **This prototype focuses on New York Medicaid**, especially managed care, long-term care, and non-MAGI eligibility. The supplied resources also include Medicare, integrated Medicare–Medicaid care, and health information privacy; their presence does not establish complete coverage of those topics.
 

@@ -395,6 +395,7 @@ class LocalHandler(BaseHTTPRequestHandler):
                 return
             assets = {'/': ('index.html', 'text/html; charset=utf-8'), '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
                       '/style.css': ('style.css', 'text/css; charset=utf-8'),
+                      '/trace-logo.svg': ('trace-logo.svg', 'image/svg+xml'),
                       '/cssny-logo.svg': ('cssny-logo.svg', 'image/svg+xml')}
             if path in assets:
                 name, kind = assets[path]
@@ -464,7 +465,7 @@ def serve(args):
         server.app = LocalApp(args.db, args.registry, args.graph, args.history,
                               context_chars=args.context_chars, retriever='local-vector',
                               vector_cache=args.vector_cache, query_cache=args.query_cache)
-        print(f'Research oracle: http://127.0.0.1:{server.server_address[1]} (local only)', flush=True)
+        print(f'TRACE: http://127.0.0.1:{server.server_address[1]} (local only)', flush=True)
         server.serve_forever()
     except KeyboardInterrupt:
         pass

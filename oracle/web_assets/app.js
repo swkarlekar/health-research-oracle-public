@@ -59,7 +59,7 @@ function renderRun(run) {
   const turn=el('article',{class:'turn',id:'run-'+run.id});
   turn.append(el('div',{class:'user-message'},run.question));
   const answer=el('div',{class:'answer'});
-  answer.append(el('div',{class:'answer-label'},el('span',{class:'answer-symbol','aria-hidden':'true'},'o'),'Research oracle',run.saved_example?el('small',{},run.saved_example===2?'Saved Bedrock run':'Saved local run'):null));
+  answer.append(el('div',{class:'answer-label'},el('img',{class:'answer-symbol',src:'/trace-logo.svg',alt:''}),'TRACE',run.saved_example?el('small',{},run.saved_example===2?'Saved Bedrock run':'Saved local run'):null));
   if(run.status==='running') {
     answer.append(el('div',{class:'pending'},el('span',{class:'spinner','aria-hidden':'true'}),progressLabel(run.progress)));
     turn.append(answer);return turn;
