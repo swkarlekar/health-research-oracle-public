@@ -97,4 +97,6 @@ The evidence-only command needs a previously cached query embedding; distributed
 
 Rebuilding a graph requires a new output path so existing review decisions are preserved. Corpus changes require new canonical identities, embeddings for changed documents, graph reconciliation, and a new pinned data Release. A model change does not rebuild the corpus. Commit code/config/docs in Git; publish large approved data snapshots as versioned Release assets. Do not commit `artifacts/`, source PDFs, credentials, or local settings.
 
+The TRACE pencil-and-heart logo is stored in `oracle/web_assets/trace-logo.svg`.
+
 The CSSNY logo is the unchanged [official website SVG](https://smhttp-ssl-58547.nexcesscdn.net/nycss/images/CSS_Logo-Primary_RGB.svg), saved locally as `oracle/web_assets/cssny-logo.svg`; the header links to [CSSNY](https://www.cssny.org/). No external image request is needed to load the page.

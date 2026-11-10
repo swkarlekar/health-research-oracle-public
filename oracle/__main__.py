@@ -340,7 +340,7 @@ def main(argv=None):
                     base.emit(demo_markdown(failed) if args.format == 'markdown' else demo_result(failed), args.output)
             except OSError as write_error:
                 print(f'Could not write diagnostics: {write_error}', file=sys.stderr)
-        print(f'Oracle error: {exc}', file=sys.stderr)
+        print(f'TRACE error: {exc}', file=sys.stderr)
         return 2
 
 
