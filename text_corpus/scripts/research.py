@@ -339,7 +339,9 @@ def quote_candidates(text: str) -> list[dict]:
 def make_packet(corpus: Corpus, args: argparse.Namespace) -> dict:
     if not args.query.strip() or len(args.query) > 1600:
         raise HarnessError("Research question must contain 1 to 1600 characters")
-    found = corpus.search(args.query, args.limit, args.include_indexes)
+    queries = getattr(args, 'search_queries', None)
+    found = (corpus.search_planned(args.query, queries, args.limit) if queries
+             else corpus.search(args.query, args.limit, args.include_indexes))
     by_id = {e["chunk_id"]: e for e in found}
     for chunk_id in args.include_chunk or []:
         item = corpus.chunk(chunk_id)
@@ -405,7 +407,9 @@ def reject_generated_urls(value: Any) -> None:
         raise HarnessError("Model-generated URLs are not accepted; citations must come from canonical chunks.")
 
 
-def render_response(packet: dict, response: dict, corpus: Corpus) -> dict:
+def render_response(packet: dict, response: dict, corpus: Corpus, *, answer_style=None) -> dict:
+    if answer_style not in (None, 'source_quotations'):
+        raise HarnessError('Unknown answer representation')
     validate_packet(packet, corpus)
     validate_schema(response, load_json(CONFIG / "response.schema.json"))
     for field in ("findings", "uncertainties", "clarifying_questions"):
@@ -439,7 +443,10 @@ def render_response(packet: dict, response: dict, corpus: Corpus) -> dict:
     if required_quotes - quoted_chunks:
         raise HarnessError("Every evidence ID used in a finding needs a verified quotation span")
     status = response["status"]
-    if status in {"supported", "partial"} and not response["findings"]:
+    substantive = bool(response['findings'] or (answer_style == 'source_quotations' and response['quotes']))
+    if answer_style == 'source_quotations' and (response['findings'] or response['scope']['assumptions']):
+        raise HarnessError('Extractive answers cannot contain generated factual findings or assumptions')
+    if status in {"supported", "partial"} and not substantive:
         raise HarnessError(f"{status} requires at least one supported finding")
     if status == "supported" and (response["uncertainties"] or response["clarifying_questions"]):
         raise HarnessError("Supported status cannot conceal unresolved uncertainties; select an appropriate qualified status")
@@ -447,7 +454,7 @@ def render_response(packet: dict, response: dict, corpus: Corpus) -> dict:
         raise HarnessError(f"{status} requires an explicit uncertainty")
     if status == "clarification_needed" and not (response["clarifying_questions"] or any(x["question_for_user"] for x in response["uncertainties"])):
         raise HarnessError("clarification_needed requires a question for the user")
-    if status == "not_found" and response["findings"]:
+    if status == "not_found" and substantive:
         raise HarnessError("not_found cannot contain substantive findings")
     if not by_evidence and status not in {"not_found", "clarification_needed"}:
         raise HarnessError("There is no retrieved evidence for this result state")
@@ -455,6 +462,7 @@ def render_response(packet: dict, response: dict, corpus: Corpus) -> dict:
     uncertainties = [{**u, "citations": [citation(by_evidence[eid]) for eid in u["evidence_ids"]]} for u in response["uncertainties"]]
     # These notices are inserted by the application, regardless of model wording.
     return {"schema_version": SCHEMA_VERSION, "packet_id": packet["packet_id"], "status": status,
+            **({'answer_style': answer_style} if answer_style else {}),
             "scope": response["scope"], "findings": findings, "quotes": rendered_quotes,
             "uncertainties": uncertainties, "clarifying_questions": response["clarifying_questions"],
             "human_resolutions": packet.get("human_resolutions", []),
@@ -491,7 +499,9 @@ def as_markdown(result: dict) -> str:
         if value not in (None, [], ""):
             lines.append(f"- **{key.replace('_', ' ').title()}:** {markdown_literal(', '.join(value) if isinstance(value, list) else value)}")
     lines += ["", "## Findings", ""]
-    if not result["findings"]:
+    if result.get('answer_style') == 'source_quotations' and result['quotes']:
+        lines.append('The source findings below are verbatim quotations, with their recorded scope and citations.')
+    elif not result["findings"]:
         lines.append("No supported finding is presented in this result.")
     for finding in result["findings"]:
         refs = "; ".join(f"{c['evidence_id']}: {source_link(c)}" for c in finding["citations"])

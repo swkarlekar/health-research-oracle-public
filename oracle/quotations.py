@@ -12,8 +12,10 @@ Use the passages array as evidence text. Python will insert the exact canonical
 quotation, offsets, and citations after selection. Never count characters.
 Include a supporting selection for every evidence ID cited in a finding. Use
 only the passages needed for the answer, preserving conditions and exceptions.
-Aim for three to six concise passages; use more only to retain necessary source
-conditions. Remove ancillary findings rather than citing unquoted evidence.
+findings[].evidence_ids uses an allowed evidence ID such as E1, NEVER a quote ID
+such as E1.Q2, a chunk identity, document identity, or a citation. Only quotes[]
+uses passage quote IDs. Use allowed_evidence_ids from this payload.
+Select the smallest complete responsive set; one passage can be enough. Remove ancillary findings rather than citing unquoted evidence.
 """
 
 
@@ -21,19 +23,20 @@ def passages(item):
     """Lossless partition at nearby line/sentence boundaries, never a paraphrase."""
     text, start, result = item['text'], 0, []
     while start < len(text):
-        end = min(start + 1400, len(text))
-        if end < len(text):
+        end = min(start + 4000, len(text))
+        if end - start > 120:
             # Prefer a complete paragraph with its heading, rather than a fixed
             # window that cuts off the condition at the end of a legal sentence.
             paragraph = re.search(r'\n[ \t]*\n', text[start + 120:end])
             if paragraph:
                 end = start + 120 + paragraph.end()
-            else:
-                end = min(start + 900, len(text))
-                sentence = re.search(r'(?<=[.;])\s+', text[start + 300:end])
+            elif end < len(text):
+                # Keep complete tabular/conditional paragraphs when possible;
+                # an early sentence break can detach the operative conditions.
+                sentences = list(re.finditer(r'(?<=[.;])\s+', text[start + 300:end]))
                 boundaries = list(re.finditer(r'\s+', text[start + 350:end]))
-                if sentence:
-                    end = start + 300 + sentence.end()
+                if sentences:
+                    end = start + 300 + sentences[-1].end()
                 elif boundaries:
                     end = start + 350 + boundaries[-1].end()
         result.append({'quote_id': f"{item['evidence_id']}.Q{len(result) + 1}",
@@ -71,6 +74,7 @@ def generation_payload(payload):
     covered = covered_hits(value['evidence'])
     value['covered_retrieval_hits'] = covered
     value['evidence'] = [e for e in value['evidence'] if e['evidence_id'] not in covered]
+    value['allowed_evidence_ids'] = [e['evidence_id'] for e in value['evidence']]
     for item in value['evidence']:
         item['passages'] = [{'quote_id': p['quote_id'], 'text': p['text']} for p in passages(item)]
         del item['text']

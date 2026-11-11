@@ -7,13 +7,15 @@ from .corpus import HarnessError
 SCOPE_QUESTIONS = {
     "program": "Which insurance program and jurisdiction should the research cover? 'Unknown' is acceptable.",
     "plan_type": "Which plan category should the research cover (for example MLTC or mainstream managed care)? 'Unknown' is acceptable.",
-    "research_date": "Which governing date should the documents address? Use YYYY-MM-DD or 'unknown'; do not provide a client's personal dates.",
+    "research_date": "Which governing date or period should this research cover? Use YYYY-MM-DD or unknown; do not provide personal dates.",
 }
 
 
 def inferred_scope(question):
     """Use scope explicitly present in prose; never infer client eligibility."""
     plan = next((p for p in ('MLTC', 'HARP', 'CDPAP') if re.search(r'\b' + p + r'\b', question, re.I)), None)
+    if plan is None and re.search(r'\bmanaged long[ -]term care\b', question, re.I):
+        plan = 'MLTC'
     if plan is None and re.search(r'\bnon-MAGI\b', question, re.I):
         plan = 'not plan specific'
     if plan is None and re.search(r'\bmanaged care\b', question, re.I):

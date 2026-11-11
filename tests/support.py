@@ -33,6 +33,9 @@ class ScriptedModel:
         self.calls += 1
         self.payloads.append(copy.deepcopy(payload))
         response = answer(payload)
+        response_schema = schema.get('properties', {}).get('response', schema)
+        if response_schema.get('properties', {}).get('findings', {}).get('maxItems') == 0:
+            response['findings'] = []
         if self.calls == 1:
             return response
         if self.conflict:
@@ -59,10 +62,10 @@ class RoutedModel:
         from oracle.request_routing import ROUTER_POLICY, PUBLIC_POLICY
         self.calls += 1
         if system == ROUTER_POLICY:
-            assert set(payload) == {'question'}
+            assert set(payload) == {'question', 'scope'}
             return copy.deepcopy(self.case['classification'])
         if system == PUBLIC_POLICY:
-            assert set(payload) == {'question'}
+            assert set(payload) == {'question', 'scope', 'retrieval_program_prefix'}
             return copy.deepcopy(self.case['public_check'])
         return self.research.complete(system, payload, schema)
 

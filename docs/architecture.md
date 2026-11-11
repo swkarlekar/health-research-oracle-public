@@ -5,9 +5,11 @@ flowchart TD
     Q[Advocate research question] --> S{Research scope sufficient?}
     S -- No --> C[Ask focused non-identifying clarification]
     C --> S
-    S -- Yes --> R[Retrieve selected source passages]
+    S -- Yes --> B[Check requested outputs and plan focused searches]
+    B --> R[Retrieve vector and full-text source candidates]
     V[Snapshot-pinned source and version metadata] --> R
-    R --> D[Document-grounded LLM draft]
+    R --> E[Expand context and filter known foreign contract products]
+    E --> D[LLM selects verbatim source findings]
     D --> P[Separate LLM review: support, applicability, exceptions, dates, conflicts]
     P -- Specific missing evidence and search available --> B[One bounded additional corpus search]
     B --> P
@@ -21,16 +23,16 @@ The existing release's `research.py` owns canonical source text, source metadata
 
 ## Selected demo architecture
 
-The demo uses Amazon Titan Text Embeddings V2 (`amazon.titan-embed-text-v2:0`) document vectors exported from the completed AWS trial. Local exhaustive cosine search resolves canonical source identities, then uses the same SQLite context and relationship map. New questions still use AWS Titan query embeddings unless cached. Settings chooses Bedrock Qwen3 32B by default or an installed local response model; explicit account/model-specific consent is required for paid calls. No hosted vector database is required for normal use. The private data Release restores documents, vectors, and graph on each laptop. See [the technical README](../README-technical.md).
+The demo uses Amazon Titan Text Embeddings V2 (`amazon.titan-embed-text-v2:0`) document vectors exported from the completed AWS trial. Local exhaustive cosine search resolves canonical source identities, then uses the same SQLite context and relationship map. New questions still use AWS Titan query embeddings unless cached. Settings chooses Bedrock Qwen3 32B by default or an installed local response model; explicit account/model-specific consent is required for paid calls. No hosted vector database is required for normal use. The public data Release restores documents, vectors, and graph on each laptop. See [the technical README](../README-technical.md).
 
 ```mermaid
 flowchart LR
-    Q[Advocate question] --> R[Local search over exported Titan document vectors]
+    Q[Advocate question and focused searches] --> R[Local Titan-vector and full-text retrieval]
     R --> I[Resolve stable chunk and document IDs locally]
     I --> E[Expand to complete section or short document]
     E --> G[Follow reviewed amendment and clarification relationships in local SQLite]
     G --> P[Assemble canonical evidence within a context budget]
-    P --> D[Selected Bedrock or local LLM draft]
+    P --> D[Selected Bedrock or local LLM selects source quotations]
     D --> V[Selected LLM review and bounded additional retrieval]
     V --> C[Python quotation, citation, scope, and response validation]
 ```
@@ -43,20 +45,20 @@ Expansion should load a complete short source where practical, or the relevant s
 
 Perform this expansion in our Python harness instead of depending on managed hierarchical chunking. AWS [advises against hierarchical chunking with S3 Vectors](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html) because large parent contexts can exceed metadata limits. Prechunked source files with `NONE` chunking preserve the current citation identities, while larger parent text is loaded separately by our application.
 
-For the demo, canonical sources, context, relationships, and document-vector retrieval stay on the laptop. The earlier authorized trial exercised S3, Titan, Bedrock Knowledge Bases with S3 Vectors, and Bedrock generation; temporary resources were deleted after vector export/restore testing. Local and saved managed searches returned identical top-K chunk sets on the original 15 questions, with order differences in three. This is not a guarantee for future queries. Lambda, Neptune, and managed GraphRAG are unnecessary for this demo. Tests and prompts do not establish legal correctness; see [prompt-search findings](prompt-search.md).
+For the demo, canonical sources, context, relationships, and document-vector retrieval stay on the laptop. The earlier authorized trial exercised S3, Titan, Bedrock Knowledge Bases with S3 Vectors, and Bedrock generation; temporary resources were deleted after vector export/restore testing. The earlier raw-vector baseline matched saved managed top-K chunk sets on 15 questions, with order differences in three. Current focused-query planning and hybrid text/vector ranking change retrieval and have no measured AWS ranking equivalence. Lambda, Neptune, and managed GraphRAG are unnecessary for this demo. Tests and prompts do not establish legal correctness; see [current advocate retests](advocate-optimization.md).
 
 ## Acceptance mapping
 
 | Requirement | Implementation | Remaining evaluation |
 | --- | --- | --- |
 | Identify trusted, applicable sources | Snapshot-pinned user-selected registry; exact URL/raw-hash checks; reviewer applicability check | Source selection alone does not establish authority; reviewed program/jurisdiction tags would improve retrieval |
-| Clear answers or explicit no-answer | Separate draft and review; qualified result states; no-hit short circuit | Advocate-authored questions and reference answers |
+| Clear answers or explicit no-answer | Extractive source findings and separate review; qualified result states; no-hit short circuit | Advocate-authored questions and reference answers |
 | Verbatim quotations and hyperlinks | Canonical Unicode offsets and source URLs; invalid spans/IDs rejected; whole-excerpt fallback | PDF layout-sensitive passages need visual/source review |
 | Focused clarifying questions | Scope gate plus model/reviewer questions; `unknown` supported | Evaluate unnecessary clarifications and PII paraphrases |
 | No PII solicitation or client-specific advice | General-question input boundary, policy prompts, independent review call, conservative output rules | Adversarial and expert review; no complete automatic guarantee |
 | Outdated documents/addenda/conflicts | Reviewer sees date/relationship leads and evidence; one additional corpus search; uncertainty states | Exhaustive version discovery and expert-labeled cross-document cases |
 | Documentary evidence alone | No model tools; no browser or external search adapter in the runtime; source content is untrusted evidence | Evaluate pretrained-knowledge leakage and prompt injection |
-| Tight budget | Paid calls disabled until explicit account/model consent; per-session allowance and persistent $10 per-computer ledger; bounded context/output and no retries | App controls are not account-wide billing enforcement; model quality remains separately evaluated |
+| Tight budget | Paid calls disabled until explicit account/model consent; per-session allowance and persistent cumulative ledger, initially $10, with audited authorized increases; bounded context/output and no retries | App controls are not account-wide billing enforcement; model quality remains separately evaluated |
 
 ## Version handling
 
@@ -64,7 +66,7 @@ The processor already records document date mentions, relationship phrases, file
 
 A document-level relationship signal can trigger the additional corpus search. It cannot itself support a cited conclusion: the exact supporting passage must be in the evidence packet. If no passage or clear relationship can be established, the response retains the gap. Human resolutions in the original harness remain labeled interpretations, distinct from documentary facts.
 
-The local review is bounded by retrieved/expanded excerpts and at most sixteen documentary signals totaling 9,000 JSON characters per document and 16,000 signal characters overall. Context expansion has separate unit/total limits and a one-hop graph traversal cap. This is a cost/context safeguard, not evidence that the remaining corpus lacks a conflicting statement. Future evaluation must measure the quality of managed semantic retrieval, applicability, version-family resolution, and linked addenda on expert-reviewed queries.
+The local review is bounded by retrieved/expanded excerpts and compact documentary signal leads within explicit per-document and total character limits; full signals remain available in the debug record. Context expansion has separate unit/total limits and a one-hop graph traversal cap. This is a cost/context safeguard, not evidence that the remaining corpus lacks a conflicting statement. Future evaluation must measure the quality of managed semantic retrieval, applicability, version-family resolution, and linked addenda on expert-reviewed queries.
 
 ## Before advocate use
 

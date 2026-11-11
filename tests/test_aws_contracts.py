@@ -30,6 +30,13 @@ def converse_response(value):
 
 
 class AwsMockContracts(Fixture):
+    def test_native_decoder_preserves_bounded_evidence_identity_allowlist(self):
+        schema = {'type': 'string', 'enum': ['E1', 'E7']}
+        native = _native_schema(schema)
+        self.assertEqual(native['enum'], ['E1', 'E7'])
+        with self.assertRaises(HarnessError):
+            base.validate_schema('E2', native)
+
     def test_native_decoder_omits_substring_patterns_but_local_validation_retains_them(self):
         schema = {'type': 'string', 'pattern': r'[.!?]$'}
         self.assertNotIn('pattern', _native_schema(schema))
@@ -43,7 +50,7 @@ class AwsMockContracts(Fixture):
             'properties': {'quotes': {'type': 'array', 'maxItems': 2, 'uniqueItems': True,
                 'items': {'type': 'string', 'minLength': 1, 'enum': ['E1.Q1', 'E1.Q2']}}}}
         native = _native_schema(schema)
-        self.assertNotIn('enum', native['properties']['quotes']['items'])
+        self.assertEqual(native['properties']['quotes']['items']['enum'], ['E1.Q1', 'E1.Q2'])
         self.assertNotIn('minLength', native['properties']['quotes']['items'])
         self.assertEqual(native['properties']['quotes']['maxItems'], 2)
         fake = Mock()
@@ -232,6 +239,21 @@ class AwsMockContracts(Fixture):
             packet = corpus.packet("synthetic alpha", SCOPE, limit=1)
         self.assertEqual(packet["retrieval"]["engine"], "bedrock_knowledge_bases")
         self.assertTrue(packet["retrieval"]["semantic_retrieval"])
+        base.validate_packet(packet, corpus)
+
+    def test_managed_query_plan_traces_both_searches_and_preserves_original_scope(self):
+        corpus = self.retrieval_corpus()
+        self.addCleanup(corpus.close)
+        fake = Mock()
+        fake.retrieve.return_value = {'retrievalResults': [self.hit()]}
+        with patch('oracle.aws.aws_client', return_value=fake):
+            packet = corpus.packet('Original synthetic question', SCOPE, limit=2,
+                                   search_queries=['synthetic alpha', 'synthetic addendum'])
+        self.assertEqual(fake.retrieve.call_count, 2)
+        self.assertEqual(packet['scope']['question'], 'Original synthetic question')
+        plans = packet['retrieval']['search_plan']['query_plans']
+        self.assertEqual(len(plans), 2)
+        self.assertTrue(all(p['semantic_retrieval'] for p in plans))
         base.validate_packet(packet, corpus)
 
     def test_ingestion_requires_exact_approval_before_sdk(self):

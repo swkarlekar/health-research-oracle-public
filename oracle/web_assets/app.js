@@ -80,7 +80,9 @@ function renderRun(run) {
     for(const finding of result.findings)answer.append(el('div',{class:'finding'},el('p',{},finding.text),...(finding.citations||[]).map(ref=>cite(ref,run))));
   }
   if(result.quotes?.length) {
-    const language=el('details',{class:'source-language'},el('summary',{class:'section-heading'},`Verbatim source passages (${result.quotes.length})`));
+    const language=result.answer_style==='source_quotations'
+      ?el('section',{class:'source-language'},el('h3',{class:'section-heading'},'Source findings — verbatim quotations'))
+      :el('details',{class:'source-language'},el('summary',{class:'section-heading'},`Verbatim source passages (${result.quotes.length})`));
     for(const [index,quote] of result.quotes.entries()) {
       const content=el('div',{class:'quote-card'});
       content.append(el('button',{class:'text-button',onClick:()=>openSource(run.id,index)},citationLabel(quote.citation),' · View in document ↗'));

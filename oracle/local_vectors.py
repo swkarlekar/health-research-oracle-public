@@ -1,7 +1,8 @@
 """Exact local cosine search over the verified Titan/S3 Vectors export.
 
 Document vectors are never regenerated. Query cache misses fail closed unless an
-explicitly approved embedding adapter is supplied; no lexical/model substitution.
+explicitly approved embedding adapter is supplied. Successful semantic search is
+combined with canonical local full-text candidates; it is never bypassed on error.
 """
 from array import array
 from contextlib import contextmanager, closing
@@ -9,6 +10,7 @@ import hashlib
 import heapq
 import json
 import math
+import re
 from pathlib import Path
 import sqlite3
 import struct
@@ -160,18 +162,49 @@ class LocalVectorCorpus(ApprovedCorpus):
             item.update(retrieval_score=hit['cosine_similarity'], retrieval_score_kind='cosine_similarity',
                         vector_distance=hit['distance'])
             found.append(item)
-        self.last_search = {'strategy': 'local_titan_cosine', 'semantic_retrieval': True,
+        # Exact vocabulary complements embeddings, which can miss a rare service
+        # acronym or retrieve a generic overview. This adds no external evidence.
+        lexical = [item for item in base.Corpus.search(self, query, 30, False) if self.allowed(item)]
+        plan = next((p for p in ('mltc', 'harp', 'map', 'pace') if re.search(r'\b' + p + r'\b', query, re.I)), None)
+        lexical.sort(key=lambda item: item['retrieval_score'] *
+                     (1.8 if plan and re.search(r'\b' + plan + r'\b', item.get('title') or '', re.I) else 1))
+        lexical = lexical[:30]
+        candidates = {item['chunk_id']: item for item in found}
+        scores = {}
+        for queue in (found, lexical):
+            for rank, item in enumerate(queue, 1):
+                candidates.setdefault(item['chunk_id'], item)
+                scores[item['chunk_id']] = scores.get(item['chunk_id'], 0) + 1 / (20 + rank)
+        if plan:
+            for item in candidates.values():
+                if re.search(r'\b' + plan + r'\b', item.get('title') or '', re.I):
+                    scores[item['chunk_id']] *= 1.5
+        combined = sorted(candidates.values(), key=lambda item: (-scores[item['chunk_id']], item['chunk_id']))
+        selected, seen = [], set()
+        for item in combined:
+            identity = (item['document_id'], item.get('page'), item.get('section_id'))
+            if identity in seen:
+                continue
+            selected.append(item)
+            seen.add(identity)
+            if len(selected) == limit:
+                break
+        self.last_search = {'strategy': 'local_titan_fts_hybrid', 'semantic_retrieval': True,
             'embedding': dict(self.queries.last_usage), 'document_vectors_sha256': self.index.manifest['content_sha256'],
-            'candidate_limit': 30, 'canonical_hits': len(found), 'returned_hits': min(limit, len(found)),
-            'ranking': 'exact_cosine_then_chunk_id', 'aws_ranking_equivalence': 'not_guaranteed_aws_uses_approximate_search',
+            'candidate_limit': 30, 'canonical_hits': len(candidates), 'returned_hits': len(selected),
+            'ranking': 'reciprocal_rank_fusion_k20_then_chunk_id', 'plan_title_boost': plan,
+            'fused_plan_title_multiplier': 1.5 if plan else 1.0,
+            'lexical_candidates': [item['chunk_id'] for item in lexical],
+            'selected_candidates': [item['chunk_id'] for item in selected],
+            'aws_ranking_equivalence': 'not_equivalent_hybrid_local_ranking',
             'seconds': round(time.monotonic() - started, 6),
             'candidates': [{k: hit[k] for k in ('chunk_id', 'document_id', 'cosine_similarity', 'distance')} for hit in ranked]}
-        return found[:limit]
+        return selected
 
-    def packet(self, question, scope, limit=4):
-        packet = super().packet(question, scope, limit)
-        packet['retrieval'].pop('query_expression', None)  # No FTS expression was executed.
-        packet['retrieval'].update(engine='local_titan_vectors', mode='semantic', semantic_retrieval=True)
+    def packet(self, question, scope, limit=4, *, search_queries=None):
+        packet = super().packet(question, scope, limit, search_queries=search_queries)
+        packet['retrieval'].pop('query_expression', None)  # Each query's FTS candidates are traced in search_plan.
+        packet['retrieval'].update(engine='local_titan_vectors', mode='hybrid', semantic_retrieval=True)
         packet['packet_id'] = base.packet_hash(packet)
         return packet
 

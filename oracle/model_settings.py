@@ -96,7 +96,7 @@ class ModelSettings:
                 raise HarnessError('Selected model is not listed in this region; choose an available model')
             ledger = SpendLedger(self.ledger_path)
             if allowance > Decimal(str(ledger.summary()['remaining_usd'])):
-                raise HarnessError('This allowance exceeds the remaining strict $10 budget')
+                raise HarnessError('This allowance exceeds the remaining strict cumulative budget')
             identifier = uuid.uuid4().hex
             expires = (datetime.now(timezone.utc) + timedelta(hours=4)).isoformat()
             authorization = {'id': identifier, 'account': identity['account'], 'expires_at': expires,

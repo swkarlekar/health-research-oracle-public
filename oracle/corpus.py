@@ -97,9 +97,42 @@ class ApprovedCorpus(base.Corpus):
             raise HarnessError("Source is outside the selected source registry")
         return item
 
-    def packet(self, question, scope, limit=4):
+    def search_planned(self, question, queries, limit=4):
+        """Bounded query-only leads; never evidence or a replacement question."""
+        if not isinstance(queries, list) or not 1 <= len(queries) <= 2:
+            raise HarnessError('A retrieval plan requires one or two focused queries')
+        from .policy import check_input
+        queues, plans = [], []
+        for query in queries:
+            check_input(query, {})
+            base.reject_generated_urls(query)
+            if len(query) > 180:
+                raise HarnessError('A planned query exceeds 180 characters')
+            queues.append(self.search(query, limit))
+            plans.append(dict(self.last_search))
+        selected, seen = [], set()
+        while any(queues) and len(selected) < limit:
+            for queue in queues:
+                while queue:
+                    item = queue.pop(0)
+                    identity = (item['document_id'], item.get('page'), item.get('section_id'))
+                    if identity in seen:
+                        continue
+                    selected.append(item)
+                    seen.add(identity)
+                    break
+                if len(selected) == limit:
+                    break
+        self.last_search = {'strategy': 'bounded_query_plan', 'original_question': question,
+                            'queries': queries, 'query_plans': plans, 'returned_hits': len(selected),
+                            'semantic_retrieval': any(p.get('semantic_retrieval') for p in plans),
+                            'ranking': 'round_robin_distinct_source_sections'}
+        return selected
+
+    def packet(self, question, scope, limit=4, *, search_queries=None):
         packet = base.make_packet(self, argparse.Namespace(
             query=question, limit=limit, include_indexes=False, include_chunk=[],
+            search_queries=search_queries,
             program=scope.get("program"), plan_type=scope.get("plan_type"),
             research_date=scope.get("research_date"), resolutions=ROOT / "artifacts/resolutions.jsonl"))
         if hasattr(self, 'last_search'):
@@ -112,7 +145,10 @@ class ApprovedCorpus(base.Corpus):
         ids = {e["chunk_id"] for e in packet["evidence"]}
         for item in found:
             if item["chunk_id"] not in ids:
-                packet["evidence"].append(dict(item, evidence_id=f"E{len(packet['evidence']) + 1}",
+                next_id = max(packet['retrieval'].get('max_assigned_evidence_id', 0),
+                              max((int(e['evidence_id'][1:]) for e in packet['evidence']), default=0)) + 1
+                packet['retrieval']['max_assigned_evidence_id'] = next_id
+                packet["evidence"].append(dict(item, evidence_id=f"E{next_id}",
                                              quote_candidates=base.quote_candidates(item["text"])))
                 ids.add(item["chunk_id"])
         packet["retrieval"]["evidence_count"] = len(packet["evidence"])
@@ -125,18 +161,18 @@ class ApprovedCorpus(base.Corpus):
         # Document-level date/relationship contexts supplement the retrieved excerpts.
         # They are search leads, never sufficient citation support without a retrieved span.
         documents = []
-        signal_budget = 8000
+        signal_budget = 2400
         document_fields = ("title", "source_url", "source_role", "source_review_status", "customer_selection_explicitly_recorded",
                            "target_resolution_status", "version_resolution_status", "legal_status", "date_signals", "uncertainty_flags")
         for doc_id in sorted({e["document_id"] for e in packet["evidence"]}):
             row = self.connection.execute("SELECT metadata_json FROM documents WHERE document_id=?", (doc_id,)).fetchone()
             doc = json.loads(row[0])
             dates = doc.get("date_signals") or {}
-            leads, remaining = [], min(4000, signal_budget)
+            leads, remaining = [], min(1200, signal_budget)
             signals = dates.get("text_mentions", []) + (doc.get("relationship_signals") or [])
             for signal in signals:
                 size = len(base.canonical(signal))
-                if size <= remaining and len(leads) < 16:
+                if size <= remaining and len(leads) < 4:
                     leads.append(signal)
                     remaining -= size
                     signal_budget -= size

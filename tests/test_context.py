@@ -42,6 +42,31 @@ class ContextTests(Fixture):
         with self.assertRaises(HarnessError):
             corpus.chunk("ctx:doc0:0:10:made-up")
 
+    def test_large_section_neighbor_window_is_canonical_bounded_and_labeled_incomplete(self):
+        import json
+        import sqlite3
+        corpus = self.wrapper(short_document_chars=10, max_unit_chars=20, max_total_chars=100)
+        original = self.corpus.chunk('chunk0')
+        text = original['text']
+        with sqlite3.connect(self.db) as con:
+            con.execute("DELETE FROM chunks WHERE chunk_id='chunk0'")
+            con.execute("DELETE FROM chunks_fts WHERE chunk_id='chunk0'")
+            for index, (start, end) in enumerate(((0, 10), (10, 20), (20, len(text)))):
+                key = f'window{index}'
+                item = {**original, 'chunk_id': key, 'document_start_char': start,
+                        'document_end_char': end, 'text_sha256': base.digest(text[start:end])}
+                con.execute('INSERT INTO chunks VALUES(?,?,?)', (key, 'doc0', json.dumps(item)))
+                con.execute('INSERT INTO chunks_fts VALUES(?,?,?,?)', (key, 'Synthetic alpha', '', text[start:end]))
+        seed = self.corpus.chunk('window1')
+        context = corpus._context_for('doc0', seed=seed)
+        self.assertEqual(context['text'], text[:20])
+        self.assertEqual(context['context_kind'], 'bounded_neighbor_context')
+        self.assertLessEqual(len(context['text']), corpus.max_unit_chars)
+        with patch.object(self.corpus, 'search', return_value=[seed]):
+            packet = corpus.packet('Synthetic alpha', SCOPE, 1)
+        corpus.validate_context(packet)
+        self.assertTrue(any(o.get('reason') == 'incomplete_large_section' for o in packet['context_expansion']['omissions']))
+
     def test_graph_document_rehash_cannot_forge_canonical_source(self):
         corpus = self.wrapper()
         doc = corpus.graph.documents["doc0"]

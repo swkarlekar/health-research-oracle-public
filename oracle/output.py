@@ -13,6 +13,8 @@ def demo_result(result):
     keys = ("status", "findings", "quotes", "uncertainties", "clarifying_questions")
     view = {key: copy.deepcopy(result.get(key, [])) for key in keys}
     view["status"] = result["status"]
+    if result.get('answer_style') == 'source_quotations':
+        view['answer_style'] = 'source_quotations'
     if result.get('request_boundary_only'):
         view['request_boundary_only'] = True
     def citation(item):
@@ -55,6 +57,8 @@ def demo_markdown(result):
     for finding in view["findings"]:
         refs = "; ".join(dict.fromkeys(base.source_link(c) for c in finding.get("citations", [])))
         lines += [literal(finding["text"]) + (f" ({refs})" if refs else ""), ""]
+    if view.get('answer_style') == 'source_quotations' and view['quotes']:
+        lines += ['**Source findings — verbatim quotations**', '']
     # Never shorten a verified quotation: doing so could remove an exception.
     for quote in view["quotes"]:
         ref = quote["citation"]
@@ -132,7 +136,7 @@ class DebugTrace:
                                    for item in output.get('requests', []) if isinstance(item, dict)],
                       'missing_attributes': output.get('missing_attributes', [])}
         elif role == 'public_research_check':
-            public = {key: output[key] for key in ('explicit_public_research', 'request_text') if key in output}
+            public = {key: output[key] for key in ('explicit_public_research', 'request_text', 'search_queries', 'search_focus') if key in output}
         elif role == "draft":
             public = {k: output[k] for k in ("status", "findings", "quotes", "uncertainties", "clarifying_questions") if k in output}
         else:

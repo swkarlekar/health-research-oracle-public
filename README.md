@@ -1,5 +1,7 @@
 # TRACE
 
+> Experimental prompt/harness candidate. This branch is available for inspection and retesting; it is not enabled in the default `main` demo. Final tests found wrong-program, relevance, and completeness failures. See the [evaluation and exact outputs](docs/advocate-optimization.md).
+
 **Trusted Research for Advocates with Citations & Evidence**
 
 <img src="oracle/web_assets/trace-logo.svg" width="80" alt="TRACE logo, a pencil tracing a heart">
@@ -72,27 +74,29 @@ flowchart TD
     S -->|No| C[Ask focused clarification]
     C --> Q
     S -->|Yes| B[Check requested outputs and public research intent]
-    B -->|Public research remains| R[Retrieve passages from approved sources]
+    B -->|Public research remains| R[Plan focused searches and retrieve approved passages]
     B -->|Capability limit or missing attributes| N[Explain limits or ask clarification; no source search]
     V[Source registry and document relationship map] --> R
-    R --> E[Expand context and draft findings]
-    E --> J[Separate LLM review: support, exceptions, dates, conflicts]
+    R --> E[Expand sections and connected source context]
+    E --> D[Select responsive source quotations and record gaps]
+    D --> J
+    J[Separate LLM review: support, exceptions, dates, conflicts]
     J -->|Specific evidence missing; once only| A[Additional corpus search]
-    A --> J
+    A --> E
     J --> P[Validate exact quotations, citations, scope, and boundaries]
     P --> O[Supported findings, explicit limits, clarification, or no suitable answer]
     P -->|Invalid output| F[Withhold answer; retain debug report]
 ```
 
-Two query-only LLM checks separate public-rule research from requests for private access, guarantees, or individual conclusions. Mixed requests can continue with explicit capability limits. The map provides documentary links and version leads; the second LLM pass checks the retrieved evidence and proposed findings. Dates embedded in source text take priority. Allowed last-modified metadata embedded in a document is only a labeled secondary proxy, never proof that a rule became effective or replaced another rule. Unresolved conflicts and missing evidence remain visible.
+Two query-only LLM checks separate public-rule research from requests for private access, guarantees, or individual conclusions and plan focused searches. Mixed requests can continue with explicit capability limits. Retrieval combines Titan vector candidates with local text matches. The LLM selects a small set of verbatim passages, followed by a separate review of responsiveness, program/plan applicability, exceptions, dates, and conflicts. Rule content is displayed as source quotations; generated text identifies evidence gaps and capability limits. The map provides documentary links and version leads. Dates embedded in source text take priority. Allowed last-modified metadata embedded in a document is only a labeled secondary proxy, never proof that a rule became effective or replaced another rule. Unresolved conflicts and missing evidence remain visible.
 
 For a concrete look at the instructions, see **[prompt examples and the actual prompt sources](docs/prompts.md)**. For example, the reviewer is told: “Newer documents do not automatically supersede older ones. Require explicit documentary language for any version relationship.”
 
 ## Current limits
 
-This is a research prototype, not a validated legal advice system. Matching quotations and a favorable LLM review do not prove legal correctness or completeness. Testing has found missed conditions, wrong-program applicability, unsupported conclusions, and operational rejections. The [prompt experiments](docs/prompt-search.md) improved some results but did not establish reliable legal synthesis. A narrow request-boundary guard is enabled; experimental source-answering pipelines have not replaced the production drafting/review prompts.
+This is a research prototype, not a validated legal advice system. Matching quotations and a favorable LLM review do not prove legal correctness or completeness. Testing has found missed conditions, wrong-program applicability, unsupported conclusions, and operational rejections. The [latest advocate-case optimization](docs/advocate-optimization.md) replaces free legal paraphrases in the UI with reviewed verbatim source findings and adds focused hybrid retrieval. This reduces one source of unsupported statements but does not guarantee that selected passages answer the question.
 
-In the [advocate-case comparison](docs/advocate-comparison.md), six of seven question variants stopped before source search, and the remaining run missed relevant indexed passages. None produced a substantive cited answer.
+The [earlier advocate-case baseline](docs/advocate-comparison.md) returned no substantive cited answers. The [optimization report](docs/advocate-optimization.md) preserves those failures, subsequent experiments, final retests, and remaining limitations. Some supplied reference answers depend on policies absent from the fixed corpus; TRACE must state that gap rather than invent the rule.
 
 The current package contains **58 evidence-producing documents and 4,572 chunks**, from 108 source records; 26 acquired indexes are excluded from evidence retrieval and 24 targets were unavailable. Research is limited to the supplied sources. Do not enter client identifiers or ask the system to access private case records, decide an individual violation, guarantee an outcome, or recommend client-specific action steps.
 
@@ -100,7 +104,7 @@ The current package contains **58 evidence-producing documents and 4,572 chunks*
 
 - [Technical README](README-technical.md): AWS SSO, permissions, SQLite/vector storage, developer commands, and spending controls.
 - [Prompt examples](docs/prompts.md) and [prompt-search findings](docs/prompt-search.md).
-- [Advocate question comparison](docs/advocate-comparison.md): original and simplified questions, actual responses, reference-answer differences, timing, and cost.
+- [Advocate question baseline](docs/advocate-comparison.md) and [current optimization results](docs/advocate-optimization.md): original and simplified questions, source gaps, actual responses, timing, and cost.
 - [Chat and document viewer](docs/local-interface.md).
 - [Data release and verification](docs/data-bundle.md), including the [public distribution audit](docs/publication-audit.md).
 - [Local vector retrieval and AWS comparison](docs/local-vectors.md).

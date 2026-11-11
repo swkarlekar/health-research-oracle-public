@@ -63,9 +63,8 @@ def _native_schema(value):
                         if key in ('properties', '$defs', 'definitions') else clean(item))
                   for key, item in node.items() if key not in (
                       'minLength', 'maxLength', 'minimum', 'maximum', 'multipleOf', 'uniqueItems', 'pattern')}
-        enums = result.get('enum', [])
-        if enums and all(isinstance(v, str) and re.fullmatch(r'E[1-9][0-9]*(\.Q[1-9][0-9]*)?', v) for v in enums):
-            result.pop('enum', None)
+        if result.get('minItems', 0) > 1:
+            result['minItems'] = 1  # Full cardinality is still checked locally.
         return result
     return clean(value)
 
@@ -78,6 +77,37 @@ def _sdk_call(client, operation, **kwargs):
         if type(exc).__module__.startswith("botocore"):
             raise HarnessError(f"AWS {operation} failed; no response accepted and no retry attempted") from exc
         raise
+
+
+def deduplicate_reference_sets(value):
+    """Remove only identical scalar evidence/quote references, recording positions.
+
+    No claim, source identity, selector, scope or unknown value is rewritten.
+    The complete original schema and canonical-source gates still run afterward.
+    """
+    changes = []
+    def visit(node, path):
+        if isinstance(node, list):
+            for index, child in enumerate(node):
+                visit(child, f'{path}[{index}]')
+        elif isinstance(node, dict):
+            for key, child in node.items():
+                field = f'{path}.{key}'
+                pattern = r'E[1-9][0-9]*' if key == 'evidence_ids' else r'E[1-9][0-9]*\.Q[1-9][0-9]*'
+                if (key in ('evidence_ids', 'quotes') and isinstance(child, list)
+                        and all(isinstance(x, str) and re.fullmatch(pattern, x) for x in child)):
+                    seen, retained = set(), []
+                    for index, identity in enumerate(child):
+                        if identity in seen:
+                            changes.append({'path': field, 'original_index': index, 'exact_duplicate': identity})
+                        else:
+                            seen.add(identity)
+                            retained.append(identity)
+                    node[key] = retained
+                else:
+                    visit(child, field)
+    visit(value, 'response')
+    return changes
 
 
 class ApprovalGate:
@@ -276,6 +306,9 @@ class BedrockModel:
             raise HarnessError("Bedrock output usage exceeded the approved token cap")
         self.usage.append({"prompt_tokens": usage.get("inputTokens"), "output_tokens": usage.get("outputTokens"),
                            "total_tokens": usage.get("totalTokens"), "latency_ms": metrics.get("latencyMs")})
+        normalizations = deduplicate_reference_sets(response)
+        if normalizations:
+            self.usage[-1]['exact_duplicate_reference_removals'] = normalizations
         base.validate_schema(response, schema)
         return response
 
@@ -293,8 +326,8 @@ class BedrockCorpus(ApprovedCorpus):
         self.client_factory = client_factory
         self.last_retrieval = {}
 
-    def packet(self, question, scope, limit=4):
-        packet = super().packet(question, scope, limit)
+    def packet(self, question, scope, limit=4, *, search_queries=None):
+        packet = super().packet(question, scope, limit, search_queries=search_queries)
         packet["retrieval"].update({"engine": "bedrock_knowledge_bases", "mode": "semantic",
                                     "semantic_retrieval": True, "managed_retrieval": self.last_retrieval})
         packet["packet_id"] = base.packet_hash(packet)
@@ -366,6 +399,8 @@ class BedrockCorpus(ApprovedCorpus):
                                "pagination_limit_reached": bool(next_token and pages == self.max_pages and len(found) < limit),
                                "canonical_hits": len(found), "returned_hits": min(len(found), limit),
                                "query_sha256": base.digest(query)}
+        self.last_search = {'strategy': 'managed_bedrock_retrieve', 'semantic_retrieval': True,
+                            **self.last_retrieval}
         return found[:limit]
 
 

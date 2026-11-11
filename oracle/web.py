@@ -267,7 +267,7 @@ class LocalApp:
         trace = ProgressTrace(progress)
         try:
             with self.corpus() as corpus:
-                result = Harness(corpus, self.model_factory(), limit=3, trace=trace,
+                result = Harness(corpus, self.model_factory(), limit=6, trace=trace,
                                  request_guard=not self.custom_model_factory).run(question, scope)
             self.finish(identity, result, trace.report(result))
         except Exception as exc:

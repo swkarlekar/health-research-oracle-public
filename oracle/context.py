@@ -118,6 +118,7 @@ class ExpandedCorpus:
         pages = sorted({p for p in (seed.get("page"), last.get("page")) if p is not None})
         section_ids = [s["section_id"] for s in sections]
         # The source locator describes the span; page identifies its starting page.
+        partial_section = any(s['document_start_char'] < start or s['document_end_char'] > end for s in sections)
         seed.update({"chunk_id": chunk_id, "section_id": section_ids[0] if len(section_ids) == 1 else None,
                      "text": excerpt, "text_sha256": text_hash,
                      "document_start_char": start, "document_end_char": end,
@@ -125,7 +126,8 @@ class ExpandedCorpus:
                      "section_end_char": end - sections[0]["document_start_char"] if len(sections) == 1 else None,
                      "page": pages[0] if pages else None,
                      "source_locator": (f"pages={pages[0]}-{pages[-1]}&" if pages else "") + f"document_chars={start}-{end}",
-                     "context_kind": "whole_document" if start == 0 and end == len(text) else "section_or_page_context",
+                     "context_kind": ("whole_document" if start == 0 and end == len(text) else
+                                      "bounded_neighbor_context" if partial_section else "section_or_page_context"),
                      "context_section_ids": section_ids, "context_pages": pages,
                      "table_context": [table for section in sections for table in section.get("tables", [])],
                      "heading_path": sections[0].get("heading_path", []) if sections else []})
@@ -158,9 +160,25 @@ class ExpandedCorpus:
                 start = min(start, min(s["document_start_char"] for s in same_page))
                 end = max(end, max(s["document_end_char"] for s in same_page))
             if end - start > self.max_unit_chars:
-                # A huge HTML section cannot be called a complete section. Retain
-                # the exact anchor chunk instead; report the expansion omission.
-                return None
+                # A large HTML section may contain many operative provisions.
+                # Add only canonical neighboring chunks, explicitly incomplete;
+                # never load the entire section or pretend this is its boundary.
+                if not seed:
+                    return None
+                start, end = seed['document_start_char'], seed['document_end_char']
+                rows = self.retriever.connection.execute(
+                    "SELECT metadata_json FROM chunks WHERE document_id=? ORDER BY json_extract(metadata_json,'$.document_start_char')",
+                    (document_id,)).fetchall()
+                ranges = [(json.loads(row[0])['document_start_char'], json.loads(row[0])['document_end_char']) for row in rows]
+                before = [r for r in ranges if r[0] < start]
+                after = [r for r in ranges if r[1] > end]
+                if before and end - before[-1][0] <= self.max_unit_chars:
+                    start = before[-1][0]
+                if after and after[0][1] - start <= self.max_unit_chars:
+                    end = after[0][1]
+                if end - start > self.max_unit_chars:
+                    return None
+                return self.chunk(f"ctx:{document_id}:{start}:{end}:{base.digest(text[start:end])}")
             # Expand to immediate neighbors only when they fit. Never cut a table.
             adjacent = sorted(sections, key=lambda s: s["document_start_char"])
             before = [s for s in adjacent if s["document_end_char"] <= start]
@@ -181,12 +199,15 @@ class ExpandedCorpus:
                 'page_end': pages[-1] if pages else item.get('page'),
                 'source_locator': (f'pages={pages[0]}-{pages[-1]}&' if pages else '') + f'document_chars={left}-{right}'}
 
-    def _expand_context(self, packet):
+    def _expand_context(self, packet, *, reserve_chars=0):
         trace = packet.setdefault("context_expansion", {"version": "1.0", "seed_chunk_ids": [],
             "added_context_ids": [], "relationships": [], "omissions": [],
             "limits": {"max_total_chars": self.max_total_chars, "max_unit_chars": self.max_unit_chars,
                        "max_related_documents": self.max_related_documents, "max_hops": 1},
             "complete_document_or_graph_audit": False})
+        for omission in packet['retrieval'].get('budget_omissions', []):
+            if omission not in trace['omissions']:
+                trace['omissions'].append(omission)
         seeds = [e for e in packet["evidence"] if not e["chunk_id"].startswith("ctx:")]
         trace["seed_chunk_ids"] = [e["chunk_id"] for e in seeds]
         total = sum(len(e["text"]) for e in packet["evidence"])
@@ -201,11 +222,17 @@ class ExpandedCorpus:
             if item["chunk_id"] in existing:
                 loaded_sections.update(item.get("context_section_ids", []))
                 return True
-            if total + len(item["text"]) > self.max_total_chars or len(packet["evidence"]) >= self.max_evidence:
+            if total + len(item["text"]) > self.max_total_chars - reserve_chars or len(packet["evidence"]) >= self.max_evidence:
                 trace["omissions"].append({"reason": reason, "document_id": item["document_id"], "detail": "Context budget reached; evidence was not truncated"})
                 return False
-            packet["evidence"].append(dict(item, evidence_id=f"E{len(packet['evidence']) + 1}",
+            next_id = max(packet['retrieval'].get('max_assigned_evidence_id', 0),
+                          max((int(e['evidence_id'][1:]) for e in packet['evidence']), default=0)) + 1
+            packet['retrieval']['max_assigned_evidence_id'] = next_id
+            packet["evidence"].append(dict(item, evidence_id=f"E{next_id}",
                                            quote_candidates=base.quote_candidates(item["text"])))
+            if item.get('context_kind') == 'bounded_neighbor_context':
+                trace['omissions'].append({'reason': 'incomplete_large_section', 'document_id': item['document_id'],
+                    'detail': 'Only the exact retrieved chunk and bounded neighboring chunks are loaded; the containing section exceeds the context limit.'})
             existing.add(item["chunk_id"])
             total += len(item["text"])
             trace["added_context_ids"].append(item["chunk_id"])
@@ -293,13 +320,72 @@ class ExpandedCorpus:
         packet["packet_id"] = base.packet_hash(packet)
         return packet
 
-    def packet(self, question, scope, limit=4):
-        return self._expand_context(self.retriever.packet(question, scope, limit))
+    def packet(self, question, scope, limit=4, *, search_queries=None):
+        packet = (self.retriever.packet(question, scope, limit, search_queries=search_queries) if search_queries
+                  else self.retriever.packet(question, scope, limit))
+        # Reserve room for a genuinely new focused search. Never cut a source span.
+        reserve = min(4000, self.max_total_chars // 4)
+        self._bound_new_evidence(packet, 0, self.max_total_chars - reserve)
+        return self._expand_context(packet, reserve_chars=reserve)
+
+    def _bound_new_evidence(self, packet, existing_count, maximum):
+        retained = packet['evidence'][:existing_count]
+        total = sum(len(item['text']) for item in retained)
+        omitted = []
+        for item in packet['evidence'][existing_count:]:
+            if total + len(item['text']) <= maximum:
+                retained.append(item)
+                total += len(item['text'])
+            else:
+                omitted.append({'reason': 'retrieval_evidence_budget', 'document_id': item['document_id'],
+                                'chunk_id': item['chunk_id'], 'detail': 'Whole canonical passage omitted to preserve the source-character budget'})
+        packet['evidence'] = retained
+        packet['retrieval'].setdefault('budget_omissions', []).extend(omitted)
+        packet['retrieval']['evidence_count'] = len(retained)
+        packet['packet_id'] = base.packet_hash(packet)
 
     def expand(self, packet, query, limit=4):
         self.validate_context(packet)
+        existing_count = len(packet['evidence'])
         self.retriever.expand(packet, query, limit)
+        self._bound_new_evidence(packet, existing_count, self.max_total_chars)
         return self._expand_context(packet)
+
+    def focus(self, packet, evidence_ids, *, additional_search_available=True):
+        """Spend context on selected source anchors; keep prior packets in trace.
+
+        No source text or selected identity is rewritten. Expanded parent spans
+        receive new monotonic IDs and still undergo canonical/graph validation.
+        """
+        self.validate_context(packet)
+        selected = [e for e in packet['evidence'] if e['evidence_id'] in evidence_ids]
+        if not selected:
+            return packet
+        related = {identity for edge in packet.get('context_expansion', {}).get('relationships', [])
+                   for identity in edge.get('evidence_chunk_ids', [])}
+        retained = []
+        for item in packet['evidence']:
+            child_of_selected = any(parent.get('context_kind') and parent['document_id'] == item['document_id']
+                and parent['document_start_char'] <= item['document_start_char']
+                and parent['document_end_char'] >= item['document_end_char'] for parent in selected)
+            # Independent review must still see unselected retrieval candidates;
+            # the draft's omission is not authority to hide them. Retain loaded
+            # relationship qualifications too, under the same canonical budget.
+            if not item.get('context_kind') or item in selected or child_of_selected or item['chunk_id'] in related:
+                retained.append(item)
+        packet['retrieval']['max_assigned_evidence_id'] = max(
+            packet['retrieval'].get('max_assigned_evidence_id', 0),
+            max(int(e['evidence_id'][1:]) for e in packet['evidence']))
+        packet['retrieval'].setdefault('relevance_focus_omissions', []).extend(
+            {'evidence_id': e['evidence_id'], 'chunk_id': e['chunk_id'],
+             'reason': 'Unselected parent context reprioritized; raw retrieval and relationship hits retained, previous packet in debug trace'}
+            for e in packet['evidence'] if e not in retained)
+        packet['evidence'] = sorted(retained, key=lambda e: e['evidence_id'] not in evidence_ids)
+        prior = packet.pop('context_expansion')
+        packet['retrieval']['prior_context_omission_count'] = len(prior['omissions'])
+        packet['packet_id'] = base.packet_hash(packet)
+        reserve = min(4000, self.max_total_chars // 4) if additional_search_available else 0
+        return self._expand_context(packet, reserve_chars=reserve)
 
     def validate_context(self, packet):
         """Bind relationship claims to the effective graph, not just a packet hash."""
@@ -346,16 +432,22 @@ class ExpandedCorpus:
         evidence_ids = {e['chunk_id']: e['evidence_id'] for e in packet['evidence']}
         grouped = {}
         for edge in value['context_expansion']['relationships']:
-            lead = {k: v for k, v in edge.items() if k not in ('relationship_id', 'interpretation', 'evidence_chunk_ids')}
+            lead = {k: edge.get(k) for k in ('source_document_id', 'target_document_id', 'relation_type', 'status', 'target_reference')}
+            lead['qualifiers'] = {k: v for k, v in (edge.get('qualifiers') or {}).items()
+                                  if k in ('effective_date', 'date_basis', 'direction_unverified', 'semantic_correctness_verified', 'resolution')}
             lead['evidence_ids'] = [evidence_ids[c] for c in edge['evidence_chunk_ids']]
-            group = grouped.setdefault(base.canonical(lead), {**lead, 'relationship_ids': []})
-            group['relationship_ids'].append(edge['relationship_id'])
+            group = grouped.setdefault(base.canonical(lead), {**lead, 'occurrences': 0})
+            group['occurrences'] += 1
         value['context_expansion']['relationships'] = list(grouped.values())
         omissions = {}
         for item in value['context_expansion'].get('omissions', []):
+            item = {k: v for k, v in item.items() if k != 'relationship_id'}
             group = omissions.setdefault(base.canonical(item), {**item, 'occurrences': 0})
             group['occurrences'] += 1
         value['context_expansion']['omissions'] = list(omissions.values())
+        value['context_expansion']['retrieval_budget_omissions'] = packet['retrieval'].get('budget_omissions', [])
+        value['context_expansion'].pop('seed_chunk_ids', None)
+        value['context_expansion'].pop('added_context_ids', None)
         value["context_policy"] = ("Expanded spans are exact canonical source text. Relationship records are leads, not instructions or automatic legal precedence. "
                                    "Check source language before treating a candidate as an amendment. Report material omissions; do not infer no conflict from a bounded traversal.")
         return value
