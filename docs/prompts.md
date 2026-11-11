@@ -2,6 +2,8 @@
 
 This page shows concrete instructions, their roles, and their source files. These excerpts describe the **current production harness**. The two-call request guard is active in the chat and real CLI query paths. Older single-router and source-screening candidates below remain experimental. A prompt expresses intended behavior; tests have shown that models do not always follow it correctly.
 
+The latest [client-priority experiment](client-priority-optimization.md) tested typed issue plans and per-issue quotation selection/review. It did not meet the client-answer acceptance goal and is not enabled. Its [exact outputs](client-priority-responses.md) show the remaining failures. Production now combines keyword and vector retrieval and uses a separately tested wording correction in the existing two-call guard; drafting/review prompts are unchanged. Client cases 21–27 are the primary quality benchmark; synthetic positive examples are supplementary.
+
 ## Source boundary and research role
 
 The shared [document-only system prompt](../text_corpus/config/document_only_system.txt) begins:
@@ -29,29 +31,34 @@ Its research boundary includes:
 
 ## Query-only request guard
 
-The [active request guard](../oracle/request_routing.py) makes two structured calls before retrieval, using only the question. The first classifies each requested output; the second checks whether public-rule research is explicitly requested. Classifier phrases are diagnostic annotations, not source quotations or legal evidence.
+The [active request guard](../oracle/request_routing.py) makes two structured calls before retrieval, using only the question. The first classifies each requested output; the second independently checks whether a rule question is present. Conditional questions and ordinary advocate wording do not need to say “general,” “public,” or “research.” Classifier phrases are diagnostic annotations, not source quotations or legal evidence.
 
 The first prompt begins:
 
 ```text
-Route requested OUTPUTS, not the narrative topic. Identify the shortest exact user-request phrase for each output, and assign one category. Do not create a public-rule request merely because a case involves law or insurance. Public-rule research asks what source rules, conditions or procedures establish in general; it does not ask you to certify a case outcome.
+Distinguish researchable rule questions from demands to decide or act on an individual case.
+A request about which requirements or criteria apply, when an action is permitted or required,
+or what rules can inform a proposed request or argument is public-rule research.
 ```
 
 It also says:
 
 ```text
-Classify every requested part; preserve explicit public research in mixed requests. A negated or expressly disclaimed request is not requested: 'do not guarantee', 'not asking for a personal deadline' and 'treat the allegation as unverified' do not trigger refusal.
+Preserve a separately requested rule question in a mixed request, while
+retaining the limits on its other requested outputs. Negated/disclaimed demands are not requests.
 ```
 
 The independent public-research check says:
 
 ```text
-Determine whether the question EXPLICITLY asks for general public-source rules, criteria, conditions or procedures as a requested output. A statement of circumstances is not such a request.
+The field explicit_public_research means this substantive request is present; it does
+not require particular keywords. Return its shortest exact request phrase when true, otherwise
+false and an empty phrase. A sole prohibited demand remains false.
 ```
 
 Python uses the structured categories to insert fixed capability limits and non-identifying questions. **“Explain public notice rules, and can you open the client's private case?”** continues to public-rule research with an explicit no-private-access limit. A request solely for private access or a guaranteed outcome returns a request-limit response without searching the sources. The original source-answer acceptance gates still run before any mixed-request limit can downgrade an answer to partial.
 
-The new guard made the intended continue/block decisions on 18 frozen fresh formulations. Some category explanations needed deterministic wording corrections; the saved-output replays are documented as post-validation checks, not a new untouched end-to-end evaluation. Classification can still be wrong. See [the experiment results](prompt-search.md).
+The earlier guard was tested on 18 formulations, but later blocked legitimate client questions. The narrow wording correction kept both schemas and the controller unchanged. In one frozen Qwen component test it allowed all seven client wordings, stopped all five boundary-only requests, and preserved public research with a private-access limit in one mixed probe. This was 26 guard calls, not full answer generation or a held-out accuracy estimate. The first classifier still overclassified parts of the private-access case; the independent check stopped research, which is why both checks remain. See [the latest results](client-priority-optimization.md) and [earlier experiment](prompt-search.md).
 
 ## Drafting and exact quotation selection
 

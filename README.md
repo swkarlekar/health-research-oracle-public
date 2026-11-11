@@ -38,7 +38,7 @@ Paid calls are disabled in this screenshot. The displayed ledger is this develop
 
 ## Using the workspace
 
-- **Ask a research question.** The sidebar starts with four advocate cases, with original and simplified wording where supplied, followed by 15 substantive synthetic examples and five boundary tests. Follow-up questions can use earlier user messages; previous generated answers never become evidence.
+- **Ask a research question.** The sidebar starts with the four client reference cases, with original and simplified wording where supplied, followed by five boundary tests and 15 synthetic examples. The client cases are the primary answer-quality benchmark; the synthetic examples are supplementary. Follow-up questions can use earlier user messages; previous generated answers never become evidence.
 - **Choose where the answer is generated.** The default is **Qwen3 32B on Amazon Bedrock**. Settings also lists Amazon Nova Lite and Nova Pro, or discovers already installed models in Ollama, LM Studio, and other local OpenAI-compatible servers. Discovery does not load or download a model. Local inference needs enough memory and may be slow on a CPU.
 - **Choose a historical date.** Expand the research scope and set **Rules as of** to the date whose rules you want researched—for example, a past notice or coverage period. Leave it blank if unspecified. The system checks document dates and applicability; the date does not supply a missing historical edition or guarantee that the collection establishes the rules then in force. Plan type is inferred from the question, with clarification when needed.
 - **Read the evidence.** Responses show supported findings, exact quotations, citations, and unresolved gaps. Click a citation to browse the saved document and highlighted text. **View debug report** shows retrieval, context expansion, relationship leads, model instructions, review results, usage, and validation failures. Private chain-of-thought is not requested or recorded.
@@ -60,7 +60,7 @@ This example shows a saved text source. PDF sources open in the paginated viewer
 The official-source link opens the publisher’s website separately from corpus-grounded research.
 
 
-Document retrieval and the relationship map run on your laptop. **New query vectors still use AWS Titan**, even when the answer model is local; identical cached queries reuse their vectors. Bedrock generation sends the question and selected source context to AWS. Local generation sends that context only to the selected loopback model server. The demo has no hosted server or offline chatbot mode. [Storage, privacy, costs, and model setup](README-technical.md) explains the details.
+Document retrieval combines **vector similarity and keyword search** on your laptop, alongside the local relationship map. **New query vectors still use AWS Titan**, even when the answer model is local; identical cached queries reuse their vectors. Bedrock generation sends the question and selected source context to AWS. Local generation sends that context only to the selected loopback model server. The demo has no hosted server or offline chatbot mode. [Storage, privacy, costs, and model setup](README-technical.md) explains the details.
 
 ## How the harness works
 
@@ -72,7 +72,7 @@ flowchart TD
     S -->|No| C[Ask focused clarification]
     C --> Q
     S -->|Yes| B[Check requested outputs and public research intent]
-    B -->|Public research remains| R[Retrieve passages from approved sources]
+    B -->|Public research remains| R[Hybrid vector and keyword retrieval from approved sources]
     B -->|Capability limit or missing attributes| N[Explain limits or ask clarification; no source search]
     V[Source registry and document relationship map] --> R
     R --> E[Expand context and draft findings]
@@ -90,9 +90,13 @@ For a concrete look at the instructions, see **[prompt examples and the actual p
 
 ## Current limits
 
-The [latest advocate-case optimization](docs/advocate-optimization.md) tested revised prompts and retrieval against the supplied reference answers. It improved some responses but failed important relevance and applicability checks. Its code remains on an [experimental branch](https://github.com/swkarlekar/health-research-oracle-public/tree/experiment/advocate-ground-truth); the default answer pipeline is unchanged. [Exact responses](docs/advocate-optimization-examples.md) and an [independent review](docs/advocate-independent-review.md) explain the results.
+The [client-priority optimization](docs/client-priority-optimization.md) tested all seven supplied question wordings and the five boundary examples using the expanded corpus. It recovered important passages, including the assessment-location clause, but still confused Service Legacy with Plan Legacy and missed DME payer details. Its broader planner and answer pipeline remain experimental. **Only hybrid search and a tested request-guard wording fix are enabled; the four client answers are not yet reliably correct.** The narrow guard test allowed all seven client questions and stopped all five boundary-only requests; it does not establish answer correctness. [Exact experimental responses](docs/client-priority-responses.md) preserve the failures as well as useful passages.
+
+The [earlier advocate-case optimization](docs/advocate-optimization.md), its [exact responses](docs/advocate-optimization-examples.md), and an [independent review](docs/advocate-independent-review.md) provide the preceding results. Its code remains on an [experimental branch](https://github.com/swkarlekar/health-research-oracle-public/tree/experiment/advocate-ground-truth).
 
 The [thinking-mode comparison](docs/reasoning-comparison.md) records fresh Qwen thinking-off/on runs on the four simplified questions, including failures, exact responses, latency and cost. It also records access failures for Haiku/Grok and structured-output failures for the requested Llama and GPT-OSS alternatives; none established a reliable replacement.
+
+The [updated-corpus retest](docs/client-corpus-retest.md) separates retrieval, context selection, and answer-review failures using the expanded source collection. It includes the [exact responses](docs/client-corpus-retest-responses.md); these are historical baseline runs, not evidence that the answer-quality problems have been resolved.
 
 This is a research prototype, not a validated legal advice system. Matching quotations and a favorable LLM review do not prove legal correctness or completeness. Testing has found missed conditions, wrong-program applicability, unsupported conclusions, and operational rejections. The [prompt experiments](docs/prompt-search.md) improved some results but did not establish reliable legal synthesis. A narrow request-boundary guard is enabled; experimental source-answering pipelines have not replaced the production drafting/review prompts.
 

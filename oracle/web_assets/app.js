@@ -48,8 +48,8 @@ function cite(ref,run) {
 const statusNames={supported:'Research result',partial:'Partial answer',currency_unverified:'Date unverified',conflicting_sources:'Sources differ',clarification_needed:'More information needed',not_found:'No suitable answer found',failed:'No accepted answer'};
 function progressLabel(progress) {
   if(progress?.includes('request_classification')||progress?.includes('public_research_check'))return 'Checking the research request…';
-  if(progress?.includes('model_started:review'))return 'Checking support, dates, and exceptions…';
-  if(progress?.includes('model_started:draft'))return 'Reading the retrieved sources…';
+  if(/model_started:.*review/.test(progress||''))return 'Checking support, dates, and exceptions…';
+  if(/model_started:.*(?:draft|selection)/.test(progress||''))return 'Reading the retrieved sources…';
   if(progress==='additional_retrieval_and_expansion')return 'Looking for additional source material…';
   if(progress==='final_validation')return 'Validating quotations and citations…';
   if(progress==='draft_validation')return 'Preparing the independent review…';
@@ -80,7 +80,7 @@ function renderRun(run) {
     for(const finding of result.findings)answer.append(el('div',{class:'finding'},el('p',{},finding.text),...(finding.citations||[]).map(ref=>cite(ref,run))));
   }
   if(result.quotes?.length) {
-    const language=el('details',{class:'source-language'},el('summary',{class:'section-heading'},`Verbatim source passages (${result.quotes.length})`));
+    const language=el('details',{class:'source-language',...(!result.findings?.length?{open:''}:{})},el('summary',{class:'section-heading'},`Verbatim source passages (${result.quotes.length})`));
     for(const [index,quote] of result.quotes.entries()) {
       const content=el('div',{class:'quote-card'});
       content.append(el('button',{class:'text-button',onClick:()=>openSource(run.id,index)},citationLabel(quote.citation),' · View in document ↗'));
@@ -409,7 +409,16 @@ $('zoom').addEventListener('click',()=>{const zoomed=$('document-pages').classLi
   try {
     state.config=await api('/api/config');applySettings(state.config.model_settings);$('send').disabled=false;
     state.threadKey='oracle.activeThread:'+state.config.history_namespace;
-    for(const sample of state.config.scenarios)$('examples').append(el('option',{value:sample.id},sample.demo_label||sample.id+'. '+sample.title));
+    const exampleGroups=[
+      ['Client reference questions',sample=>Boolean(sample.advocate_case)],
+      ['System limits',sample=>sample.test_kind==='negative_boundary'],
+      ['Other examples (synthetic)',sample=>!sample.advocate_case && sample.test_kind!=='negative_boundary']
+    ];
+    for(const [label,includes] of exampleGroups){
+      const group=el('optgroup',{label});
+      for(const sample of state.config.scenarios.filter(includes))group.append(el('option',{value:sample.id},sample.demo_label||sample.id+'. '+sample.title));
+      if(group.children.length)$('examples').append(group);
+    }
     updateSavedExample();
     const threads=await history();
     const last=localStorage.getItem(state.threadKey)||localStorage.getItem('oracle.activeThread');

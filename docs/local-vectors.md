@@ -7,10 +7,20 @@ origins. See [the recovery audit](source-recovery.md) for source coverage and
 qualifications. Historical AWS ranking comparisons below used only the original
 4,572-vector snapshot.
 
-The index computes exact cosine distance over permitted records, orders ties by
-canonical chunk ID and resolves results against the pinned local corpus. It adds
-no vector database dependency. Context expansion, relationship traversal,
-drafting, review, quotation validation and the citation viewer follow retrieval.
+The vector index computes exact cosine distance over permitted records and resolves
+results against the pinned local corpus. Default retrieval combines up to 30 vector
+candidates with up to 30 SQLite full-text candidates using reciprocal rank fusion:
+each channel contributes `1 / (20 + rank)`. Duplicate chunks are merged; stable
+chunk IDs break final ties. Known plan acronyms can boost matching source titles.
+This is a ranking heuristic, not a probability of legal relevance or authority.
+There is no fixed percentage of keyword versus vector results and no similarity
+threshold to lower. Debug output preserves each channel's candidates and rankings.
+
+This small hybrid layer adds no embedding model, vector database dependency, or
+paid keyword calls. The existing seed and context limits still apply. Context
+expansion, relationship traversal, drafting, review, quotation validation and the
+citation viewer follow retrieval. The broader issue planner and source-only answer
+experiment are not enabled; see [the client-priority results](client-priority-optimization.md).
 
 The cache is `artifacts/aws-eval/vector-cache.sqlite`; its checksum/count/model,
 1,024 dimensions and cosine metric are verified before loading. Source identities
@@ -61,8 +71,11 @@ The real 15-query comparison with saved AWS managed retrieval returned identical
 top-K chunk sets for all questions, with order differences in 3 cases. Scenario
 15's historical top-K was four; changing the cutoff to three changes its set.
 This evidence supports using local retrieval for the demo, not claiming a fully
-identical managed implementation. AWS uses approximate nearest-neighbor search;
-local search is exhaustive. The generation harness still requires content review.
+identical managed implementation. That historical comparison used vector-only
+ranking. The current keyword fusion deliberately changes ranking and has not been
+shown equivalent to AWS managed retrieval. AWS uses approximate nearest-neighbor
+search; local vector search is exhaustive. The generation harness still requires
+content review.
 
 Sources: [Titan V2 request/response](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-titan-embed-text.html),
 [Titan limits](https://docs.aws.amazon.com/bedrock/latest/userguide/titan-embedding-models.html),

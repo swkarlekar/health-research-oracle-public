@@ -21,11 +21,11 @@ The existing release's `research.py` owns canonical source text, source metadata
 
 ## Selected demo architecture
 
-The demo uses Amazon Titan Text Embeddings V2 (`amazon.titan-embed-text-v2:0`) document vectors exported from the completed AWS trial. Local exhaustive cosine search resolves canonical source identities, then uses the same SQLite context and relationship map. New questions still use AWS Titan query embeddings unless cached. Settings chooses Bedrock Qwen3 32B by default or an installed local response model; explicit account/model-specific consent is required for paid calls. No hosted vector database is required for normal use. The private data Release restores documents, vectors, and graph on each laptop. See [the technical README](../README-technical.md).
+The demo uses Amazon Titan Text Embeddings V2 (`amazon.titan-embed-text-v2:0`) document vectors exported from the completed AWS trial, supplemented by directly embedded new chunks using the same settings. Local exhaustive cosine search and SQLite full-text search contribute bounded candidate lists, fused by reciprocal rank. Results resolve canonical source identities, then use the same SQLite context and relationship map. New questions still use AWS Titan query embeddings unless cached. Settings chooses Bedrock Qwen3 32B by default or an installed local response model; explicit account/model-specific consent is required for paid calls. No hosted vector database is required for normal use. The sanitized public data Release restores documents, vectors, and graph on each laptop. See [retrieval details](local-vectors.md) and [the technical README](../README-technical.md).
 
 ```mermaid
 flowchart LR
-    Q[Advocate question] --> R[Local search over exported Titan document vectors]
+    Q[Advocate question] --> R[Local hybrid search: Titan vectors and SQLite keywords]
     R --> I[Resolve stable chunk and document IDs locally]
     I --> E[Expand to complete section or short document]
     E --> G[Follow reviewed amendment and clarification relationships in local SQLite]
@@ -43,7 +43,7 @@ Expansion should load a complete short source where practical, or the relevant s
 
 Perform this expansion in our Python harness instead of depending on managed hierarchical chunking. AWS [advises against hierarchical chunking with S3 Vectors](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html) because large parent contexts can exceed metadata limits. Prechunked source files with `NONE` chunking preserve the current citation identities, while larger parent text is loaded separately by our application.
 
-For the demo, canonical sources, context, relationships, and document-vector retrieval stay on the laptop. The earlier authorized trial exercised S3, Titan, Bedrock Knowledge Bases with S3 Vectors, and Bedrock generation; temporary resources were deleted after vector export/restore testing. Local and saved managed searches returned identical top-K chunk sets on the original 15 questions, with order differences in three. This is not a guarantee for future queries. Lambda, Neptune, and managed GraphRAG are unnecessary for this demo. Tests and prompts do not establish legal correctness; see [prompt-search findings](prompt-search.md).
+For the demo, canonical sources, context, relationships, and document-vector retrieval stay on the laptop. The earlier authorized trial exercised S3, Titan, Bedrock Knowledge Bases with S3 Vectors, and Bedrock generation; temporary resources were deleted after vector export/restore testing. The historical vector-only local and saved managed searches returned identical top-K chunk sets on the original 15 questions, with order differences in three. That result does not establish equivalence for the new keyword fusion or future queries. Lambda, Neptune, and managed GraphRAG are unnecessary for this demo. Tests and prompts do not establish legal correctness; see [prompt-search findings](prompt-search.md).
 
 ## Acceptance mapping
 

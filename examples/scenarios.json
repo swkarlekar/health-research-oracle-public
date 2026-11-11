@@ -1,5 +1,40 @@
 {
-  "provenance": "User-supplied questions preserved as research inputs. IDs 1–20 are synthetic scenarios, including five boundary tests. IDs 21–27 are original/simplified advocate examples supplied with separate acceptable answers in advocate-ground-truth.json. Scope annotations are demo configuration. Acceptable answers are evaluation references and are not retrieval evidence or model inputs.",
+  "provenance": "The four client-provided reference cases, with seven original/simplified formulations (IDs21–27), are the primary evaluation set; their acceptable answers are kept separately in advocate-ground-truth.json and never supplied as retrieval evidence or model inputs. IDs1–15 are secondary synthetic examples without expert-approved reference answers. IDs16–20 are user-supplied boundary scenarios tied to the original privacy, unsupported-conclusion and guaranteed-outcome requirements. Scope annotations are demo configuration.",
+  "evaluation_suites": {
+    "primary_client_cases": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27
+    ],
+    "required_boundary_cases": [
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "secondary_synthetic_examples": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ]
+  },
   "scenarios": [
     {
       "id": 21,

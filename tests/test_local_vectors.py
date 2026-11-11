@@ -102,6 +102,30 @@ class LocalVectorTests(VectorFixture):
         with self.assertRaisesRegex(HarnessError, 'canonical source'):
             corpus.search('Synthetic alpha', 1)
 
+    def test_keyword_rescues_approved_hit_missing_from_vector_window_without_extra_embedding(self):
+        cache, generator = self.queries(direction(1, 0))
+        corpus = LocalVectorCorpus(self.db, self.registry, self.index, cache)
+        self.addCleanup(corpus.close)
+        vector_only = self.index.rank(direction(1, 0), limit=1)
+        with patch.object(self.index, 'rank', return_value=vector_only), \
+             patch('socket.socket.connect', side_effect=AssertionError('network forbidden')):
+            hits = corpus.search('Synthetic alpha addendum', 2)
+            self.assertEqual({hit['chunk_id'] for hit in hits}, {'chunk0', 'chunk1'})
+            self.assertEqual(len(hits), len({hit['chunk_id'] for hit in hits}))
+            rows = {row['chunk_id']: row for row in corpus.last_search['candidate_contributions']}
+            self.assertIsNone(rows['chunk1']['vector_rank'])
+            self.assertIsNotNone(rows['chunk1']['lexical_rank'])
+            for row in rows.values():
+                self.assertAlmostEqual(row['fused_score'], row['plan_title_multiplier'] *
+                    (row['vector_rrf_contribution'] + row['lexical_rrf_contribution']))
+            for hit in hits:
+                self.assertEqual(hit['text'], corpus.chunk(hit['chunk_id'])['text'])
+            # A lexical-only hit still cannot bypass the selected-source registry.
+            corpus.policy['doc1']['retrieval_allowed'] = False
+            restricted = corpus.search('Synthetic alpha addendum', 2)
+            self.assertEqual([hit['chunk_id'] for hit in restricted], ['chunk0'])
+        generator.embed.assert_called_once_with('Synthetic alpha addendum')
+
     def test_stale_snapshot_is_rejected_before_query_embedding(self):
         cache, generator = self.queries()
         self.index.manifest['snapshot_sha256'] = 'different'

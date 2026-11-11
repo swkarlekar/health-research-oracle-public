@@ -1,6 +1,14 @@
 # Local validation record
 
-Latest checkpoint (2026-11-11): **251 application tests and 47 corpus tests passed**. The new [corpus recovery](source-recovery.md) independently checks 7,044 canonical chunks, 4,769 sections, 119 raw originals, graph/review integrity and source-list reconciliation. The shared data excludes the confidential training document. Model comparisons below are historical and do not establish answer quality on the updated corpus.
+Latest checkpoint (2026-11-11): **252 application tests and 47 corpus tests passed**. The active hybrid-search regression checks keyword rescue of a candidate omitted by vector search, deduplication, source filtering, recorded rank contributions, and reuse of the same query embedding. Existing context, quotation, privacy and spending checks remain in place.
+
+The production hybrid module also assembled evidence packets for all seven client wordings with network connections blocked and cached Titan query vectors. All stayed within the existing 16,000-character cloud context limit (8,143–15,287 source characters). The 21 initial seeds included nine keyword-only candidates and twelve present in both channels. This checks real-data retrieval/context integrity, not routing or answer quality; no answer model was invoked. It is separate from the broader experimental planner's 74-seed analysis.
+
+The [client-priority experiment](client-priority-optimization.md) evaluates all seven client question wordings, five boundary examples, and a separate legacy-answer cross-check. Its broader planner and source-answer pipeline are not enabled: substantive answer errors and prompt/schema failures remain. Its 263 application tests plus 47 corpus tests are separate engineering checks, not evidence that the client answers passed. The [exact outputs](client-priority-responses.md) preserve failures.
+
+A separate wording-only test of the original two-call request guard allowed all seven client questions, stopped all five boundary-only requests, and allowed one mixed rule-research/private-access request with a private-access limit. Only the two policy strings changed; schemas, request payloads and controller stayed the same. All 26 Qwen calls had usage receipts, with no observed thinking; calculated cost was $0.002789. This is a routing component result, not a fresh end-to-end answer benchmark or proof of general boundary accuracy.
+
+The [corpus recovery](source-recovery.md) independently checks 7,044 canonical chunks, 4,769 sections, 119 raw originals, graph/review integrity and source-list reconciliation. The shared data excludes the confidential training document. Model comparisons below are historical and do not establish answer quality on the updated corpus.
 
 Previous checkpoint (2026-11-08 UTC): **247 oracle tests and 47 corpus tests passed**.
 The collaborator setup installs the pinned data Release; Settings selects

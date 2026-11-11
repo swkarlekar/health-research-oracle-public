@@ -1,7 +1,8 @@
-"""Exact local cosine search over the verified Titan/S3 Vectors export.
+"""Local hybrid retrieval over verified Titan vectors and canonical FTS text.
 
 Document vectors are never regenerated. Query cache misses fail closed unless an
-explicitly approved embedding adapter is supplied; no lexical/model substitution.
+explicitly approved embedding adapter is supplied. FTS complements a successful
+vector query; it never bypasses the approved embedding/cache boundary.
 """
 from array import array
 from contextlib import contextmanager, closing
@@ -9,6 +10,7 @@ import hashlib
 import heapq
 import json
 import math
+import re
 from pathlib import Path
 import sqlite3
 import struct
@@ -160,18 +162,59 @@ class LocalVectorCorpus(ApprovedCorpus):
             item.update(retrieval_score=hit['cosine_similarity'], retrieval_score_kind='cosine_similarity',
                         vector_distance=hit['distance'])
             found.append(item)
-        self.last_search = {'strategy': 'local_titan_cosine', 'semantic_retrieval': True,
+        # Exact vocabulary complements embeddings, which can miss a rare service
+        # acronym or retrieve a generic overview. This adds no external evidence.
+        lexical = [item for item in base.Corpus.search(self, query, 30, False) if self.allowed(item)]
+        plan = next((p for p in ('mltc', 'harp', 'map', 'pace') if re.search(r'\b' + p + r'\b', query, re.I)), None)
+        lexical.sort(key=lambda item: item['retrieval_score'] *
+                     (1.8 if plan and re.search(r'\b' + plan + r'\b', item.get('title') or '', re.I) else 1))
+        lexical = lexical[:30]
+        candidates = {item['chunk_id']: item for item in found}
+        scores, contributions = {}, {}
+        for channel, queue in (('vector', found), ('lexical', lexical)):
+            for rank, item in enumerate(queue, 1):
+                candidates.setdefault(item['chunk_id'], item)
+                identity = item['chunk_id']
+                contribution = 1 / (20 + rank)
+                scores[identity] = scores.get(identity, 0) + contribution
+                contributions.setdefault(identity, {})[channel + '_rank'] = rank
+                contributions[identity][channel + '_rrf_contribution'] = contribution
+        if plan:
+            for item in candidates.values():
+                if re.search(r'\b' + plan + r'\b', item.get('title') or '', re.I):
+                    scores[item['chunk_id']] *= 1.5
+        combined = sorted(candidates.values(), key=lambda item: (-scores[item['chunk_id']], item['chunk_id']))
+        selected, seen = [], set()
+        for item in combined:
+            identity = item['chunk_id']
+            if identity in seen:
+                continue
+            selected.append(item)
+            seen.add(identity)
+            if len(selected) == limit:
+                break
+        self.last_search = {'strategy': 'local_titan_fts_hybrid', 'semantic_retrieval': True,
             'embedding': dict(self.queries.last_usage), 'document_vectors_sha256': self.index.manifest['content_sha256'],
-            'candidate_limit': 30, 'canonical_hits': len(found), 'returned_hits': min(limit, len(found)),
-            'ranking': 'exact_cosine_then_chunk_id', 'aws_ranking_equivalence': 'not_guaranteed_aws_uses_approximate_search',
+            'candidate_limit': 30, 'canonical_hits': len(candidates), 'returned_hits': len(selected),
+            'ranking': 'reciprocal_rank_fusion_k20_then_chunk_id', 'plan_title_boost': plan,
+            'fused_plan_title_multiplier': 1.5 if plan else 1.0,
+            'lexical_candidates': [item['chunk_id'] for item in lexical],
+            'selected_candidates': [item['chunk_id'] for item in selected],
+            'candidate_contributions': [{'chunk_id': item['chunk_id'],
+                'vector_rank': contributions[item['chunk_id']].get('vector_rank'),
+                'lexical_rank': contributions[item['chunk_id']].get('lexical_rank'),
+                'vector_rrf_contribution': contributions[item['chunk_id']].get('vector_rrf_contribution', 0),
+                'lexical_rrf_contribution': contributions[item['chunk_id']].get('lexical_rrf_contribution', 0),
+                'plan_title_multiplier': 1.5 if plan and re.search(r'\b' + plan + r'\b', item.get('title') or '', re.I) else 1.0,
+                'fused_score': scores[item['chunk_id']]} for item in combined],
+            'aws_ranking_equivalence': 'not_equivalent_hybrid_local_ranking',
             'seconds': round(time.monotonic() - started, 6),
             'candidates': [{k: hit[k] for k in ('chunk_id', 'document_id', 'cosine_similarity', 'distance')} for hit in ranked]}
-        return found[:limit]
+        return selected
 
     def packet(self, question, scope, limit=4):
         packet = super().packet(question, scope, limit)
-        packet['retrieval'].pop('query_expression', None)  # No FTS expression was executed.
-        packet['retrieval'].update(engine='local_titan_vectors', mode='semantic', semantic_retrieval=True)
+        packet['retrieval'].update(engine='local_titan_vectors', mode='hybrid', semantic_retrieval=True)
         packet['packet_id'] = base.packet_hash(packet)
         return packet
 
