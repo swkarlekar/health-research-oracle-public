@@ -232,7 +232,7 @@ class TitanQueryEmbedder:
 
 
 class BedrockModel:
-    def __init__(self, model_id, region, gate: ApprovalGate, max_output_tokens=2400, max_prompt_chars=110000, client_factory=None):
+    def __init__(self, model_id, region, gate: ApprovalGate, max_output_tokens=2400, max_prompt_chars=110000, client_factory=None, *, reasoning=False, thinking_budget_tokens=2048):
         if not isinstance(model_id, str) or not model_id.strip() or not isinstance(region, str) or not region.strip():
             raise HarnessError("A specific Bedrock model ID and region are required")
         if type(max_output_tokens) is not int or not 1 <= max_output_tokens <= 8192:
@@ -244,6 +244,24 @@ class BedrockModel:
         self.calls = 0
         self.usage = []
         self.client_factory = client_factory
+        if type(reasoning) is not bool:
+            raise HarnessError('Reasoning mode must be an explicit boolean')
+        if reasoning and not (model_id in ('qwen.qwen3-32b-v1:0', 'openai.gpt-oss-120b-1:0') or 'claude-haiku-4-5' in model_id or 'xai.grok-4.7' in model_id):
+            raise HarnessError('Unsupported model for this bounded reasoning experiment')
+        if reasoning and 'claude' in model_id and (type(thinking_budget_tokens) is not int or not 1024 <= thinking_budget_tokens < max_output_tokens):
+            raise HarnessError('Claude thinking must have a bounded budget below the total output cap')
+        self.reasoning, self.thinking_budget_tokens = reasoning, thinking_budget_tokens
+
+    def approval_resource(self):
+        resource = {'model_id': self.model_id, 'max_output_tokens': self.max_output_tokens,
+                    'max_prompt_chars': self.max_prompt_chars}
+        if self.reasoning:
+            resource['reasoning_enabled'] = True
+            if self.model_id in ('qwen.qwen3-32b-v1:0', 'openai.gpt-oss-120b-1:0') or 'xai.grok-4.7' in self.model_id:
+                resource['reasoning_effort'] = 'high'
+            if 'claude' in self.model_id:
+                resource['thinking_budget_tokens'] = self.thinking_budget_tokens
+        return resource
 
     def complete(self, system, payload, schema):
         if not isinstance(system, str) or not isinstance(schema, dict):
@@ -253,25 +271,40 @@ class BedrockModel:
                    "Do not copy schema annotations or input metadata into the answer. "
                    + ("The ONLY permitted top-level keys are: " + allowed + '. ' if allowed else '')
                    + "Match this schema:\n" + base.canonical(_prompt_schema(schema)))
+        answer_schema = schema.get('properties', {}).get('response', schema)
+        if 'meta.llama' in self.model_id and 'clarifying_questions' in answer_schema.get('properties', {}):
+            system += '\nInclude every required field even when empty. In a research response, clarifying_questions must always be an array; use [] when no clarification is needed. Never omit this field.'
+            if answer_schema['properties'].get('findings', {}).get('maxItems') == 0:
+                system += '\nFor this extractive response schema, findings must be [] and scope.assumptions must be []. Put selected passage IDs only in quotes.'
         text = base.canonical(payload)
         output_config = None
         if self.model_id.startswith('qwen.'):
-            text += '\n/no_think'
-        if self.model_id == 'qwen.qwen3-32b-v1:0':
+            text += '\n/think' if self.reasoning else '\n/no_think'
+        if self.model_id in ('qwen.qwen3-32b-v1:0', 'openai.gpt-oss-120b-1:0') or 'claude-haiku-4-5' in self.model_id or 'xai.grok-4.7' in self.model_id:
             output_config = {'textFormat': {'type': 'json_schema', 'structure': {'jsonSchema': {
                 'name': 'oracle_response', 'schema': base.canonical(_native_schema(schema))}}}}
         native_chars = len(base.canonical(output_config)) if output_config else 0
         if len(system) + len(text) + native_chars > self.max_prompt_chars:
             raise HarnessError("Prompt exceeds the approved per-call character cap")
         # Cap values are part of the exact approved resource, not caller-controlled afterward.
-        resource = {"model_id": self.model_id, "max_output_tokens": self.max_output_tokens,
-                    "max_prompt_chars": self.max_prompt_chars}
+        resource = self.approval_resource()
         self.gate.reserve("bedrock:Converse", self.region, resource)
         self.calls += 1
+        options = {}
+        inference = {'maxTokens': self.max_output_tokens, 'temperature': 0}
+        if self.model_id == 'qwen.qwen3-32b-v1:0':
+            options['additionalModelRequestFields'] = {'reasoning_effort': 'high' if self.reasoning else 'none'}
+        if self.reasoning and self.model_id == 'openai.gpt-oss-120b-1:0':
+            options['additionalModelRequestFields'] = {'reasoning_effort': 'high'}
+        if self.reasoning and 'xai.grok-4.7' in self.model_id:
+            options['additionalModelRequestFields'] = {'reasoning': {'effort': 'high'}}
+        if self.reasoning and 'claude' in self.model_id:
+            inference.pop('temperature')  # Extended thinking uses the provider's required sampling default.
+            options['additionalModelRequestFields'] = {'thinking': {'type': 'enabled', 'budget_tokens': self.thinking_budget_tokens}}
         result = _sdk_call((self.client_factory or aws_client)("bedrock-runtime", self.region), "converse",
             modelId=self.model_id, system=[{"text": system}],
             messages=[{"role": "user", "content": [{"text": text}]}],
-            inferenceConfig={"maxTokens": self.max_output_tokens, "temperature": 0},
+            inferenceConfig=inference, **options,
             **({'outputConfig': output_config} if output_config else {}))
         if not isinstance(result, dict) or result.get("stopReason") != "end_turn":
             raise HarnessError("Bedrock did not finish a complete answer; no answer accepted")
@@ -281,8 +314,11 @@ class BedrockModel:
             if message.get("role", "assistant") != "assistant" or not isinstance(content, list) or not content:
                 raise HarnessError("Bedrock returned an unexpected message shape")
             fragments = []
+            reasoning_observed = False
             for part in content:
                 if isinstance(part, dict) and set(part) == {'reasoningContent'} and isinstance(part['reasoningContent'], dict):
+                    reasoning_observed |= bool(part['reasoningContent'].get('reasoningText', {}).get('text'))
+                    reasoning_observed |= bool(part['reasoningContent'].get('redactedContent'))
                     continue  # Qwen can emit an empty block with /no_think. Never collect private reasoning.
                 if not isinstance(part, dict) or set(part) != {'text'} or not isinstance(part['text'], str):
                     raise HarnessError("Bedrock returned unsupported non-text output")
@@ -290,6 +326,12 @@ class BedrockModel:
             if not fragments:
                 raise HarnessError('Bedrock returned no answer text')
             text = "".join(fragments)
+            if self.reasoning and text.lstrip().startswith(('<think>', '<reasoning>')):
+                match = re.match(r'\s*<(think|reasoning)>([\s\S]*?)</\1>\s*', text)
+                if not match:
+                    raise HarnessError('Reasoning output ended before the final answer; no answer accepted')
+                reasoning_observed |= bool(match.group(2).strip())
+                text = text[match.end():]
             if len(text) > 100000:
                 raise HarnessError("Bedrock response exceeded the local size cap")
             response = _strict_json(text)
@@ -305,7 +347,8 @@ class BedrockModel:
         if usage.get("outputTokens", 0) > self.max_output_tokens:
             raise HarnessError("Bedrock output usage exceeded the approved token cap")
         self.usage.append({"prompt_tokens": usage.get("inputTokens"), "output_tokens": usage.get("outputTokens"),
-                           "total_tokens": usage.get("totalTokens"), "latency_ms": metrics.get("latencyMs")})
+                           "total_tokens": usage.get("totalTokens"), "latency_ms": metrics.get("latencyMs"),
+                           "reasoning_requested": self.reasoning, "reasoning_observed": reasoning_observed})
         normalizations = deduplicate_reference_sets(response)
         if normalizations:
             self.usage[-1]['exact_duplicate_reference_removals'] = normalizations
