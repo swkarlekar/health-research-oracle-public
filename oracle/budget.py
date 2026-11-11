@@ -1,4 +1,4 @@
-"""Atomic spend reservations for the single user-authorized $10 AWS trial."""
+"""Atomic reservations and audited, explicitly authorized cumulative spending caps."""
 from contextlib import contextmanager
 from decimal import Decimal, ROUND_CEILING
 import json
@@ -20,12 +20,12 @@ def microdollars(value):
 
 
 class SpendLedger:
-    def __init__(self, path, cap_usd='10'):
+    def __init__(self, path, cap_usd=None):
         self.path = Path(path)
         self.stage = None
-        cap = microdollars(cap_usd)
-        if not 0 < cap <= 10_000_000:
-            raise HarnessError('This trial cannot authorize more than $10')
+        requested = microdollars(cap_usd) if cap_usd is not None else None
+        if requested is not None and not 0 < requested <= 20_000_000:
+            raise HarnessError('The cumulative cap must be greater than $0 and at most $20')
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connection() as con:
             con.executescript('''CREATE TABLE IF NOT EXISTS budget(id INTEGER PRIMARY KEY CHECK(id=1),cap_micro INTEGER NOT NULL);
@@ -34,16 +34,40 @@ class SpendLedger:
                  charged_micro INTEGER CHECK(charged_micro>=0),status TEXT NOT NULL,
                  query_id INTEGER,details TEXT,created_at REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS stage_limits(name TEXT PRIMARY KEY,ceiling_micro INTEGER NOT NULL,
-                 allowance_micro INTEGER NOT NULL);''')
+                 allowance_micro INTEGER NOT NULL);
+                CREATE TABLE IF NOT EXISTS cap_changes(id INTEGER PRIMARY KEY,
+                 previous_micro INTEGER NOT NULL,cap_micro INTEGER NOT NULL,
+                 authorization TEXT NOT NULL,created_at REAL NOT NULL);''')
             con.execute('BEGIN IMMEDIATE')
             if 'isolated' not in {r[1] for r in con.execute('PRAGMA table_info(stage_limits)')}:
                 con.execute('ALTER TABLE stage_limits ADD COLUMN isolated INTEGER NOT NULL DEFAULT 0')
             row = con.execute('SELECT cap_micro FROM budget').fetchone()
             if row is None:
+                cap = requested if requested is not None else 10_000_000
                 con.execute('INSERT INTO budget(cap_micro) VALUES(?)', (cap,))
-            elif row[0] != cap:
-                raise HarnessError('Existing budget cap cannot be changed or reset')
-        self.cap = cap
+            elif requested is not None and row[0] != requested:
+                raise HarnessError('Existing budget cap cannot be changed or reset by opening the ledger')
+
+    @property
+    def cap(self):
+        with self.connection() as con:
+            return con.execute('SELECT cap_micro FROM budget').fetchone()[0]
+
+    def increase_cap(self, cap_usd, *, authorization):
+        """Record an explicit user-authorized increase without resetting any spending."""
+        cap = microdollars(cap_usd)
+        if not 0 < cap <= 20_000_000:
+            raise HarnessError('The cumulative cap must be greater than $0 and at most $20')
+        if not isinstance(authorization, str) or not authorization.strip():
+            raise HarnessError('A cap increase requires a record of explicit user authorization')
+        with self.connection() as con:
+            con.execute('BEGIN IMMEDIATE')
+            previous = con.execute('SELECT cap_micro FROM budget').fetchone()[0]
+            if cap <= previous:
+                raise HarnessError('An authorized cap increase must exceed the existing cap')
+            con.execute('UPDATE budget SET cap_micro=? WHERE id=1', (cap,))
+            con.execute('INSERT INTO cap_changes(previous_micro,cap_micro,authorization,created_at) VALUES(?,?,?,?)',
+                        (previous, cap, authorization.strip(), time.time()))
 
     def use_stage(self, name, additional_usd, *, baseline_before=None, isolated=False):
         """Freeze a separately approved addition once; resumes cannot reset it."""
@@ -55,7 +79,8 @@ class SpendLedger:
                 sql = 'SELECT COALESCE(SUM(COALESCE(charged_micro,reserved_micro)),0) FROM charges'
                 baseline = con.execute(sql + (' WHERE created_at<?' if baseline_before is not None else ''),
                                        (baseline_before,) if baseline_before is not None else ()).fetchone()[0]
-                ceiling = min(self.cap, baseline + allowance)
+                cap = con.execute('SELECT cap_micro FROM budget').fetchone()[0]
+                ceiling = min(cap, baseline + allowance)
                 con.execute('INSERT INTO stage_limits(name,ceiling_micro,allowance_micro,isolated) VALUES(?,?,?,?)',
                             (name, ceiling, allowance, int(isolated)))
             elif row['allowance_micro'] != allowance or row['isolated'] != int(isolated):
@@ -81,7 +106,7 @@ class SpendLedger:
             if con.execute("SELECT 1 FROM charges WHERE status='overrun' LIMIT 1").fetchone():
                 raise HarnessError('AWS BUDGET STOP: a previous receipt exceeded its reservation')
             used = con.execute('SELECT COALESCE(SUM(COALESCE(charged_micro,reserved_micro)),0) FROM charges').fetchone()[0]
-            ceiling = self.cap
+            ceiling = con.execute('SELECT cap_micro FROM budget').fetchone()[0]
             if self.stage:
                 stage = con.execute('SELECT * FROM stage_limits WHERE name=?', (self.stage,)).fetchone()
                 if stage['isolated']:
@@ -92,7 +117,7 @@ class SpendLedger:
                 else:
                     ceiling = min(ceiling, stage['ceiling_micro'])
             if used + reserved > ceiling:
-                limit = 'approved stage allowance' if self.stage else '$10 cap'
+                limit = 'approved stage allowance' if self.stage else 'approved cumulative cap'
                 raise HarnessError('STRICT AWS BUDGET STOP: next operation cannot fit within the ' + limit)
             con.execute('INSERT INTO charges VALUES(?,?,?,?,?,?,?,?)',
                         (identity, category, reserved, None, 'reserved', query_id,
@@ -124,11 +149,12 @@ class SpendLedger:
         with self.connection() as con:
             rows = [dict(row) for row in con.execute('SELECT * FROM charges ORDER BY created_at,id')]
             stages = [dict(row) for row in con.execute('SELECT * FROM stage_limits ORDER BY name')]
+            cap = con.execute('SELECT cap_micro FROM budget').fetchone()[0]
         for row in rows:
             row['details'] = json.loads(row['details'])
         used = sum(r['charged_micro'] if r['charged_micro'] is not None else r['reserved_micro'] for r in rows)
-        return {'cap_usd': self.cap / 1e6, 'committed_upper_usd': used / 1e6,
-                'remaining_usd': (self.cap - used) / 1e6, 'charges': rows,
+        return {'cap_usd': cap / 1e6, 'committed_upper_usd': used / 1e6,
+                'remaining_usd': (cap - used) / 1e6, 'charges': rows,
                 'stage_limits': [{'name': s['name'], 'ceiling_usd': None if s['isolated'] else s['ceiling_micro'] / 1e6,
                                   'allowance_usd': s['allowance_micro'] / 1e6,
                                   'remaining_usd': ((s['allowance_micro'] - sum(

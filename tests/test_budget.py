@@ -81,6 +81,33 @@ class BudgetTests(unittest.TestCase):
         with self.assertRaises(HarnessError):
             SpendLedger(self.path, '9')
 
+    def test_explicit_cap_increase_preserves_receipts_and_stage_limits(self):
+        earlier = self.ledger.reserve('earlier', '5')
+        stage = SpendLedger(self.path).use_stage('original-allowance', '1', isolated=True)
+        stage.reserve('model', '1')
+        self.ledger.increase_cap('20', authorization='User explicitly approved the $20 cumulative cap.')
+        reopened = SpendLedger(self.path)
+        summary = reopened.summary()
+        self.assertEqual(self.ledger.cap, 20_000_000)
+        self.assertEqual(summary['cap_usd'], 20)
+        self.assertEqual(summary['committed_upper_usd'], 6)
+        self.assertEqual(summary['remaining_usd'], 14)
+        self.assertIn(earlier, {row['id'] for row in summary['charges']})
+        with self.assertRaises(HarnessError):
+            stage.reserve('model', '.01')
+        with self.ledger.connection() as con:
+            changes = con.execute('SELECT previous_micro,cap_micro FROM cap_changes').fetchall()
+        self.assertEqual([tuple(row) for row in changes], [(10_000_000, 20_000_000)])
+        reopened.reserve('new-authorized-work', '14')
+        with self.assertRaises(HarnessError):
+            self.ledger.reserve('over-cap-through-an-older-instance', '.000001')
+
+    def test_cap_increase_requires_authorization_and_stays_bounded(self):
+        for cap, authorization in [('20', ''), ('20.01', 'approved'), ('10', 'approved'), ('9', 'approved')]:
+            with self.subTest(cap=cap, authorization=authorization), self.assertRaises(HarnessError):
+                self.ledger.increase_cap(cap, authorization=authorization)
+        self.assertEqual(self.ledger.summary()['cap_usd'], 10)
+
     def test_round_up_and_invalid_amounts(self):
         self.assertEqual(microdollars('0.00000001'), 1)
         for amount in ('-1', 'NaN', 'Infinity'):

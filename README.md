@@ -90,6 +90,8 @@ For a concrete look at the instructions, see **[prompt examples and the actual p
 
 ## Current limits
 
+The [latest advocate-case optimization](docs/advocate-optimization.md) tested revised prompts and retrieval against the supplied reference answers. It improved some responses but failed important relevance and applicability checks. Its code remains on an [experimental branch](https://github.com/swkarlekar/health-research-oracle-public/tree/experiment/advocate-ground-truth); the default answer pipeline is unchanged. [Exact responses](docs/advocate-optimization-examples.md) and an [independent review](docs/advocate-independent-review.md) explain the results.
+
 This is a research prototype, not a validated legal advice system. Matching quotations and a favorable LLM review do not prove legal correctness or completeness. Testing has found missed conditions, wrong-program applicability, unsupported conclusions, and operational rejections. The [prompt experiments](docs/prompt-search.md) improved some results but did not establish reliable legal synthesis. A narrow request-boundary guard is enabled; experimental source-answering pipelines have not replaced the production drafting/review prompts.
 
 In the [advocate-case comparison](docs/advocate-comparison.md), six of seven question variants stopped before source search, and the remaining run missed relevant indexed passages. None produced a substantive cited answer.
