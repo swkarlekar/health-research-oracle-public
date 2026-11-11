@@ -130,11 +130,24 @@ class OutputTests(Fixture):
         self.assertIn('could not establish support', report['error'])
         self.assertEqual(report['events'][-1]['stage'], 'rejected')
 
-    def test_all_user_scenarios_are_valid_synthetic_research_inputs(self):
-        cases = json.loads((ROOT / 'examples/scenarios.json').read_text())['scenarios']
+    def test_all_user_scenarios_are_valid_research_inputs_with_stable_ids(self):
+        all_cases = json.loads((ROOT / 'examples/scenarios.json').read_text())['scenarios']
+        self.assertEqual([item['id'] for item in all_cases[:7]], list(range(21, 28)))
+        self.assertEqual(len({item['id'] for item in all_cases}), 27)
+        cases = [item for item in all_cases if item['id'] <= 20]
         self.assertEqual([item['id'] for item in cases], list(range(1, 21)))
-        for case in cases:
+        for case in all_cases:
             check_input(case['question'], case['scope'])
+            self.assertNotIn('acceptable_answer', case)
+        benchmarks = json.loads((ROOT / 'examples/advocate-ground-truth.json').read_text())['cases']
+        by_id = {item['id']: item for item in all_cases}
+        for case in benchmarks:
+            for variant in ('simplified', 'original'):
+                identity = case[variant + '_scenario_id']
+                if identity is not None:
+                    self.assertEqual(by_id[identity]['advocate_case'], case['id'])
+                    self.assertEqual(by_id[identity]['variant'], variant)
+        self.assertIsNone(benchmarks[3]['original_scenario_id'])
         self.assertIn('no written notice', cases[0]['question'])
         self.assertIn('$40,000', cases[14]['question'])
         self.assertEqual([c['expected_behavior']['outcome'] for c in cases[15:]], [

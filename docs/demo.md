@@ -26,7 +26,7 @@ Opt-in relationship inference and importing prepared interpretations remain adva
 
 ## Evidence and output inspection
 
-The [20 synthetic questions](../examples/scenarios.json) contain 15 substantive examples and five negative boundary cases. They are not legal expert gold answers. Adding examples did not enlarge the original 15-question AWS trial authorization.
+The [example questions](../examples/scenarios.json) begin with four advocate cases in seven simplified/original variants (IDs 21–27). Their [user-supplied acceptable answers](../examples/advocate-ground-truth.json) are held out from generation and retrieval for evaluation. The original IDs 1–20 contain 15 substantive synthetic examples and five negative boundary cases. Adding examples does not authorize paid execution.
 
 ```sh
 # Actual local Titan search/context, no generation. Needs this query cached.

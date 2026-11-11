@@ -156,7 +156,7 @@ def _parser():
                         'api-check': 'Offline AWS-shaped API simulation; no inference or network'}
         ask = commands.add_parser(name, help=descriptions[name])
         ask.add_argument('question', nargs='?')
-        ask.add_argument('--case', type=int, help='User-supplied scenario 1–20, including boundary tests')
+        ask.add_argument('--case', type=int, help='User-supplied scenario ID from examples/scenarios.json, including advocate and boundary examples')
         ask.add_argument('--program')
         ask.add_argument('--plan-type')
         ask.add_argument('--research-date')

@@ -409,7 +409,7 @@ $('zoom').addEventListener('click',()=>{const zoomed=$('document-pages').classLi
   try {
     state.config=await api('/api/config');applySettings(state.config.model_settings);$('send').disabled=false;
     state.threadKey='oracle.activeThread:'+state.config.history_namespace;
-    for(const sample of state.config.scenarios)$('examples').append(el('option',{value:sample.id},sample.id+'. '+sample.title));
+    for(const sample of state.config.scenarios)$('examples').append(el('option',{value:sample.id},sample.demo_label||sample.id+'. '+sample.title));
     updateSavedExample();
     const threads=await history();
     const last=localStorage.getItem(state.threadKey)||localStorage.getItem('oracle.activeThread');

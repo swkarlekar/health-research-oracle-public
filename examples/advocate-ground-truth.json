@@ -1,0 +1,34 @@
+{
+  "provenance": "Four user-supplied advocate cases and acceptable answers, received 2026-11-10. Original question 4 was not supplied. Questions are referenced by stable scenario IDs in scenarios.json.",
+  "evaluation_boundary": "Keep these reference answers out of the corpus, retrieval, generation, and review inputs. Evaluate against the reference and independently flag source or applicability limitations.",
+  "cases": [
+    {
+      "id": 1,
+      "title": "MLTC single case agreement for SNF discharge",
+      "acceptable_answer": "An MLTC plan is required to cover out-of-network SNF if no in-network SNF is able to provide necessary services. However, the available sources do not contain any specific reference to “single case agreements” for SNF services.\nMLTC plans must be able to demonstrate to the state that they maintain “a network of providers that is sufficient in number, mix, and geographic distribution to meet the needs of the anticipated number of enrollees in the service area.”  42 CFR 438.207(b)(2).\n“If the provider network is unable to provide necessary services, covered under the contract, to a particular enrollee, the MCO, PIHP, or PAHP must adequately and timely cover these services out of network for the enrollee, for as long as the MCO, PIHP, or PAHP's provider network is unable to provide them.”  42 CFR 438.206(b)(4).\n“The Contractor shall have a minimum of two (2) providers that are accepting new Enrollees in each county in its service area for each covered service in the benefit package unless the county has an insufficient number of providers licensed, certified or available in that county as determined by the Department.”  MLTC Model Contract, Art. VII(D)(3) at p.83.\n“If the Contractor is unable to provide necessary services through its contracted network for a particular Enrollee, the Contractor agrees to adequately and timely furnish these services outside of the Contractor’s network for as long as the Contractor is unable to provide them within the network.” MLTC Model Contract, Art. VII(D)(7) at p.84.\n“If an MLTCP does not have a nursing home to meet the needs of its Enrollees, the MLTCP must authorize out of network placement. If beds are not available at the time placement is indicated, the plan must authorize out of network placement.”  MLTC Model Contract, Appendix O(VII) at p.200.",
+      "simplified_scenario_id": 21,
+      "original_scenario_id": 22
+    },
+    {
+      "id": 2,
+      "title": "Service Legacy for Minimum Needs Requirement",
+      "acceptable_answer": "Service Legacy is “a status for individuals receiving or authorized for PCS or CDPAS before September 1, 2025. Service Legacy will be assessed and reassessed using PCS/CDPAS Legacy Criteria.” MLTC Policy 25.04. Service Legacy does not require continuous enrollment, so it would apply to someone who received personal care services before October 2025.",
+      "simplified_scenario_id": 23,
+      "original_scenario_id": 24
+    },
+    {
+      "id": 3,
+      "title": "Coverage of DME for dual eligible",
+      "acceptable_answer": "The MLTC benefit package includes coverage of DME. MLTC Model Contract, Appendix G at p.156. A Medicaid state plan must provide “that the State or local agency administering such plan will take all reasonable measures to ascertain the legal liability of third parties (including health insurers, self-insured plans, group health plans (as defined in section 607(1) of the Employee Retirement Income Security Act of 1974 [29 U.S.C. 1167(1)]), service benefit plans, managed care organizations, pharmacy benefit managers, or other parties that are, by statute, contract, or agreement, legally responsible for payment of a claim for a health care item or service) to pay for care and services available under the plan.” 42 U.S.C. § 1396a(a)(25)(A). The Medicare plan’s possible coverage of DME must be exhausted before the MLTC plan will pay for it.",
+      "simplified_scenario_id": 25,
+      "original_scenario_id": 26
+    },
+    {
+      "id": 4,
+      "title": "UAS-NY Assessment in SNF",
+      "acceptable_answer": "Yes, a plan is required to assess the member in a SNF.  “The independent assessment must assess the individual where the individual is located including the individual’s home, a nursing facility, rehabilitation facility or hospital, provided that the individual’s home or residence shall be evaluated as well if necessary to support the proposed plan of care and authorization or to ensure a safe discharge. This provision shall not be construed to prevent or limit the use of telehealth in the assessment of an individual.”  18 NYCRR § 505.14(b)(2)(i)(c).",
+      "simplified_scenario_id": 27,
+      "original_scenario_id": null
+    }
+  ]
+}
