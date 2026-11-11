@@ -92,12 +92,15 @@ For a concrete look at the instructions, see **[prompt examples and the actual p
 
 This is a research prototype, not a validated legal advice system. Matching quotations and a favorable LLM review do not prove legal correctness or completeness. Testing has found missed conditions, wrong-program applicability, unsupported conclusions, and operational rejections. The [prompt experiments](docs/prompt-search.md) improved some results but did not establish reliable legal synthesis. A narrow request-boundary guard is enabled; experimental source-answering pipelines have not replaced the production drafting/review prompts.
 
+In the [advocate-case comparison](docs/advocate-comparison.md), six of seven question variants stopped before source search, and the remaining run missed relevant indexed passages. None produced a substantive cited answer.
+
 The current package contains **58 evidence-producing documents and 4,572 chunks**, from 108 source records; 26 acquired indexes are excluded from evidence retrieval and 24 targets were unavailable. Research is limited to the supplied sources. Do not enter client identifiers or ask the system to access private case records, decide an individual violation, guarantee an outcome, or recommend client-specific action steps.
 
 ## Further reading
 
 - [Technical README](README-technical.md): AWS SSO, permissions, SQLite/vector storage, developer commands, and spending controls.
 - [Prompt examples](docs/prompts.md) and [prompt-search findings](docs/prompt-search.md).
+- [Advocate question comparison](docs/advocate-comparison.md): original and simplified questions, actual responses, reference-answer differences, timing, and cost.
 - [Chat and document viewer](docs/local-interface.md).
 - [Data release and verification](docs/data-bundle.md), including the [public distribution audit](docs/publication-audit.md).
 - [Local vector retrieval and AWS comparison](docs/local-vectors.md).
