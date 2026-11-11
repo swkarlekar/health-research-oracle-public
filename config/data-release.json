@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "tag": "data-2026-11-08",
-  "asset": "oracle-data-public-f63013298e2f-v2.zip",
-  "sha256": "97450d5d93087e3eb0dfd84e52ebccf11c8c643ab463c2d0e851b1b012abec42",
-  "archive_bytes": 207996811,
-  "snapshot_sha256": "f63013298e2f9473803a2c9ba6b3534e2f8f15649c89fbc684ab2bd0d418fd25",
-  "release_url": "https://github.com/swkarlekar/health-research-oracle-public/releases/tag/data-2026-11-08",
+  "tag": "data-2026-11-11",
+  "asset": "oracle-data-public-915db3bb0c7c.zip",
+  "sha256": "d46f33fc64df0d2f79d598404d9b1f944847f8d4741a48fc09a9c988c7ea9155",
+  "archive_bytes": 315818455,
+  "snapshot_sha256": "915db3bb0c7cf98c8ce23ff2f873e9b8a415fe193243f6c4bcb0d43f7f6900c4",
+  "release_url": "https://github.com/swkarlekar/health-research-oracle-public/releases/tag/data-2026-11-11",
   "repo": "swkarlekar/health-research-oracle-public"
 }

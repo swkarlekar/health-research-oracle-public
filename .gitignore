@@ -27,3 +27,6 @@ text_corpus/evaluation/*.log
 oracle-data-manifest.json
 # Demo videos are distributed as GitHub release assets.
 docs/screenshots/*.mov
+
+# Client source inventory is local reference material, not a release asset.
+docs/medicaid_sources_of_authority.xlsx

@@ -1,7 +1,9 @@
 # Local validation record
 
-Latest checkpoint (2026-11-08 UTC): **247 oracle tests and 47 corpus tests passed**.
-The collaborator setup installs the pinned private data Release; Settings selects
+Latest checkpoint (2026-11-11): **251 application tests and 47 corpus tests passed**. The new [corpus recovery](source-recovery.md) independently checks 7,044 canonical chunks, 4,769 sections, 119 raw originals, graph/review integrity and source-list reconciliation. The shared data excludes the confidential training document. Model comparisons below are historical and do not establish answer quality on the updated corpus.
+
+Previous checkpoint (2026-11-08 UTC): **247 oracle tests and 47 corpus tests passed**.
+The collaborator setup installs the pinned data Release; Settings selects
 Bedrock or guarded local generation, with account/model-specific spending consent.
 Release export, verification, and relocated installation checked all 4,572 vectors
 and 84 original files without network or inference. The first prompt search

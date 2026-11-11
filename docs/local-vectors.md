@@ -1,18 +1,22 @@
 # Local Titan vector retrieval
 
-The read-only local index reuses the exported 4,572 Titan Text Embeddings V2
-float32 vectors, custom metadata, and corpus snapshot. It computes exact cosine
-distance over all permitted records, orders ties by canonical chunk ID, and
-resolves results against the pinned local corpus. It introduces no new vector
-database dependency. The same context expansion, relationship graph, drafting,
-review, quotation construction, and citation viewer follow retrieval.
+The read-only local index searches 7,044 Titan Text Embeddings V2 float32
+vectors: 4,572 preserved from the managed export and 2,472 new shared-corpus
+chunks embedded directly with the same model/settings. Its manifest records both
+origins. See [the recovery audit](source-recovery.md) for source coverage and
+qualifications. Historical AWS ranking comparisons below used only the original
+4,572-vector snapshot.
+
+The index computes exact cosine distance over permitted records, orders ties by
+canonical chunk ID and resolves results against the pinned local corpus. It adds
+no vector database dependency. Context expansion, relationship traversal,
+drafting, review, quotation validation and the citation viewer follow retrieval.
 
 The cache is `artifacts/aws-eval/vector-cache.sqlite`; its checksum/count/model,
-1,024 dimensions, and cosine metric are verified before loading. The managed
-source text differs from canonical text only in outer whitespace for 2,851
-records; 1,721 match exactly. All source identities and selected normalized text
-are checked against canonical records. Quotations always use original canonical
-text and offsets, preserving source whitespace and PDF locators.
+1,024 dimensions and cosine metric are verified before loading. Source identities
+and normalized source text are checked against canonical records. Quotations use
+the original canonical text and offsets, preserving whitespace and PDF locators.
+New direct embeddings do not establish managed Knowledge Base sync equivalence.
 
 Query embeddings must come from the same Titan model and settings, not an Ollama
 or Hugging Face model. `artifacts/query-embeddings.sqlite` caches exact query-text
@@ -51,7 +55,7 @@ The same local retrieval/map serves all UI response models. The debug drawer
 records cache use, canonical candidates, cosine scores, timing, and index checksum.
 There is no offline/keyword chatbot option or unapproved model fallback.
 
-The measured local self-search took 0.285 seconds after a 1.746-second index load.
+On the original snapshot, the measured local self-search took 0.285 seconds after a 1.746-second index load.
 This is a document-vector integrity smoke check, not an answer-quality benchmark.
 The real 15-query comparison with saved AWS managed retrieval returned identical
 top-K chunk sets for all questions, with order differences in 3 cases. Scenario

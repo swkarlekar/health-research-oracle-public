@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "snapshot_sha256": "f63013298e2f9473803a2c9ba6b3534e2f8f15649c89fbc684ab2bd0d418fd25",
-  "approval_basis": "User selected the current customer-PDF corpus. Selection is not authority, applicability, or currency verification.",
+  "snapshot_sha256": "915db3bb0c7cf98c8ce23ff2f873e9b8a415fe193243f6c4bcb0d43f7f6900c4",
+  "approval_basis": "Client-approved PDF/workbook sources and user-requested source recovery; legal currency not established.",
   "sources": [
     {
       "document_id": "customer_015de29d8730",
@@ -47,10 +47,12 @@
     },
     {
       "document_id": "customer_0a4db96cbae5",
-      "source_url": "https://www.medicaid.gov/medicaid/section-1115-demo/demonstration-and-waiver-list/index.html",
-      "raw_sha256": null,
+      "source_url": "https://www.medicaid.gov/medicaid/section-1115-demo/demonstration-and-waiver-list",
+      "raw_sha256": "d75f07e0adfa070754922c53be6eab1a2e14a3298b9a29f14b9ef7f78a50f725",
       "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_0c2a853c8e09",
@@ -82,10 +84,12 @@
     },
     {
       "document_id": "customer_10a45871eba9",
-      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_initial_denial_notice.pdf",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://web.archive.org/web/20210929024338id_/https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_initial_denial_notice.pdf",
+      "raw_sha256": "d5bc40e118ac370b6afc845e02c5bb0abac5238910d369ac07059a82ba7e6639",
+      "retrieval_allowed": true,
+      "version_status": "historical_exact_path_capture_content_title_and_revision_verified",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_12dc8c90c402",
@@ -159,10 +163,12 @@
     },
     {
       "document_id": "customer_32134a530ca3",
-      "source_url": "https://govt.westlaw.com/nycrr/Document/I4fdbce1bcd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/10-NYCRR-98-1.14",
+      "raw_sha256": "c0038a37b5d923ead353cc40e177af3de05386798ba17925ae23fcb9209e099d",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_32645b1bc197",
@@ -180,10 +186,12 @@
     },
     {
       "document_id": "customer_3867f794b9a7",
-      "source_url": "https://govt.westlaw.com/nycrr/Browse/Home/NewYork/NewYorkCodesRulesandRegulations?guid=I82c80630b80f11dd9190c387f1d75965&originationContext=documenttoc&transitionType=Default&contextData=(sc.Default)",
-      "raw_sha256": null,
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/title-18/chapter-II/subchapter-E/article-3/part-505",
+      "raw_sha256": "f2f83e769c5fe6ae4249c0512a2b197501f784d5f69f40471caffdca560e8a72",
       "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_38c0e6329974",
@@ -194,31 +202,39 @@
     },
     {
       "document_id": "customer_392aaec492be",
-      "source_url": "https://otda.ny.gov/hearings/",
-      "raw_sha256": null,
+      "source_url": "https://web.archive.org/web/20240115184824id_/https://otda.ny.gov/hearings/",
+      "raw_sha256": "606fa9fbf1223bd3e19088c91ba1aa9fe56d71d7446af4c289ff7e39f4b0db9f",
       "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "version_status": "historical_exact_path_capture_content_title_and_revision_verified",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_3c257bd6c96a",
-      "source_url": "https://govt.westlaw.com/nycrr/Document/Ic29b48a1bd1e11e0bbca0000845b8d3e?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)&bhcp=1",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/18-NYCRR-505.28",
+      "raw_sha256": "b3fd746919037430c88cf12407035d565c6b05466e691afa6374eee578ba7c8b",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_3cfa5fb5f181",
-      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12ad7cd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/18-NYCRR-505.23",
+      "raw_sha256": "f1cdc052dd5c8ff3c02d217bc41c2951713532c0c5e8096a08d2bdf2733ed307",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_3df3f3f955ee",
-      "source_url": "https://govt.westlaw.com/nycrr/Browse/Home/NewYork/NewYorkCodesRulesandRegulations?guid=I6899e800b80f11dd9190c387f1d75965&originationContext=documenttoc&transitionType=Default&contextData=(sc.Default)",
-      "raw_sha256": null,
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/title-18/chapter-II/subchapter-B/article-1/part-358",
+      "raw_sha256": "bd95605c58cd3122bef9a71a4b224ad842877f97e7e64653a602542d0932ef4c",
       "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_3fe606652029",
@@ -229,10 +245,12 @@
     },
     {
       "document_id": "customer_41c53bb008d2",
-      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_initial_reduce_services.pdf",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://web.archive.org/web/20210929024341id_/https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_initial_reduce_services.pdf",
+      "raw_sha256": "2cb4eed024ff37081ef2cbacdaca8969421220a4484d4b89a6a4c04826a62e83",
+      "retrieval_allowed": true,
+      "version_status": "historical_exact_path_capture_content_title_and_revision_verified",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_488c2d4502b9",
@@ -257,10 +275,12 @@
     },
     {
       "document_id": "customer_56ccc716b240",
-      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12aaacd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)&bhcp=1",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/18-NYCRR-505.8",
+      "raw_sha256": "a82aa3d3876f24c6a31fdbd0a1a6e2cbd856e289f62676f46e21312458013df7",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_577aadb2dc4e",
@@ -362,10 +382,12 @@
     },
     {
       "document_id": "customer_7bc4824b42a5",
-      "source_url": "https://www.medicaid.gov/medicaid/managed-care/index.html",
-      "raw_sha256": null,
+      "source_url": "https://www.medicaid.gov/medicaid/managed-care",
+      "raw_sha256": "e40fd3004df6b1e6d32e70bb7ac0c5fd467081c7f56191860cfe04e21c9c9835",
       "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_7c90212ed055",
@@ -432,10 +454,12 @@
     },
     {
       "document_id": "customer_95da35de25ad",
-      "source_url": "https://govt.westlaw.com/nycrr/Document/I4fdbce2acd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/10-NYCRR-98-1.19",
+      "raw_sha256": "4238818b3c545a957e9ea6545a40112df9371713d0045b33fd4a883a65c3ac75",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_967384abce51",
@@ -495,10 +519,12 @@
     },
     {
       "document_id": "customer_b14128eceeac",
-      "source_url": "https://govt.westlaw.com/nycrr/Browse/Home/NewYork/NewYorkCodesRulesandRegulations?guid=I1684af60b65611ddb903a4af59fec65a&originationContext=documenttoc&transitionType=Default&contextData=(sc.Default)",
-      "raw_sha256": null,
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/title-10/chapter-V/subchapter-A/article-3",
+      "raw_sha256": "665d22143411c3dbc58791e98d68da26e92d19481429ab7ea7b81188d864165d",
       "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_b209c2ae534d",
@@ -509,10 +535,12 @@
     },
     {
       "document_id": "customer_b851dd3fa7d4",
-      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12abccd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/18-NYCRR-505.14",
+      "raw_sha256": "7e376054a1d601e9776c1f546d003e80b56ead83272b5462025a27c87713d829",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_b8e1676d83c6",
@@ -530,24 +558,30 @@
     },
     {
       "document_id": "customer_bb48e39b4c78",
-      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12ab0cd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/18-NYCRR-505.10",
+      "raw_sha256": "3622ebb3dc19074835aae3214dbf4fa9184cc4620d4feebe65d941f1fcee8aa5",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_bc4aa2d36132",
-      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12aadcd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/18-NYCRR-505.9",
+      "raw_sha256": "d85e57bcfd2bbda9eb824092c644dda3019ab3f8006f13290bcd5637d4d5f2d2",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_bc8e7ef89307",
-      "source_url": "http://www.wnylc.com/kb_wnylc/",
-      "raw_sha256": null,
+      "source_url": "https://web.archive.org/web/20220704222108id_/http://www.wnylc.com/kb_wnylc/",
+      "raw_sha256": "1f19d26981207d4ce32adc194ba24d1471a3451d94ee2bd03b3f40e51939ef01",
       "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "version_status": "historical_exact_path_capture_content_title_and_revision_verified",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_bf6107958d5c",
@@ -565,10 +599,12 @@
     },
     {
       "document_id": "customer_c018e1f1d0a5",
-      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_final_reduce_services.pdf",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://web.archive.org/web/20210929024335id_/https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_final_reduce_services.pdf",
+      "raw_sha256": "91cf9afb49f78d313855b2c0cbc75daf622b272be6458f37a9b98d3a65a5c769",
+      "retrieval_allowed": true,
+      "version_status": "historical_exact_path_capture_content_title_and_revision_verified",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_c0f1310313fc",
@@ -607,10 +643,12 @@
     },
     {
       "document_id": "customer_cc19806d1b69",
-      "source_url": "https://govt.westlaw.com/nycrr/Browse/Home/NewYork/NewYorkCodesRulesandRegulations?guid=I075422a0b65611ddb903a4af59fec65a&originationContext=documenttoc&transitionType=Default&contextData=(sc.Default)",
-      "raw_sha256": null,
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/title-10/chapter-II/subchapter-R/part-98/subpart-98-1",
+      "raw_sha256": "67bcd4384dfec2a2fec304adb0ac71019ee39f3bea0810462da9ba92c54e1964",
       "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_ce220014a729",
@@ -635,17 +673,21 @@
     },
     {
       "document_id": "customer_d62eb36c8e54",
-      "source_url": "https://govt.westlaw.com/nycrr/Document/I4fdbce18cd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/10-NYCRR-98-1.13",
+      "raw_sha256": "9d4d92c51910e7d5b5b989733c327a6420cf37bdafdc7258c879aa4adafe9c14",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_e06827260997",
-      "source_url": "https://www.health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_final_denial_notice.pdf",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://web.archive.org/web/20210613133835id_/https://health.ny.gov/health_care/managed_care/plans/appeals/docs/2017-11-20_final_denial_notice.pdf",
+      "raw_sha256": "2d7898287d0a9a5d8aa200821240f6cd61a53facd041cd60b313a2735e46c1d4",
+      "retrieval_allowed": true,
+      "version_status": "historical_exact_path_capture_content_title_and_revision_verified",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_e1be16d77f17",
@@ -684,17 +726,21 @@
     },
     {
       "document_id": "customer_eb71f4ade168",
-      "source_url": "https://govt.westlaw.com/nycrr/Browse/Home/NewYork/NewYorkCodesRulesandRegulations?guid=I2eeeaf60b65611ddb903a4af59fec65a&originationContext=documenttoc&transitionType=Default&contextData=(sc.Default)",
-      "raw_sha256": null,
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/title-10/chapter-V/subchapter-C/article-7",
+      "raw_sha256": "611d4b4145fd8b5cdbf4f2da15538111f490c247792b30a6295ec98ad7ad40ec",
       "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_ee654fdc7de4",
-      "source_url": "https://govt.westlaw.com/nycrr/Document/I50d12aa1cd1711dda432a117e6e0f345?viewType=FullText&originationContext=documenttoc&transitionType=CategoryPageItem&contextData=(sc.Default)",
-      "raw_sha256": null,
-      "retrieval_allowed": false,
-      "version_status": "customer_supplied_links_not_historical_document_bytes"
+      "source_url": "https://www.law.cornell.edu/regulations/new-york/18-NYCRR-505.5",
+      "raw_sha256": "b8deafff064cca36abbe215066821208fe69610731952476f612b0dcb9353eff",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     },
     {
       "document_id": "customer_f1e78342577e",
@@ -758,6 +804,114 @@
       "raw_sha256": "3ace66d407fb41ddf3494da6f14ab4c23ed217834da2946c5ff868c662980cea",
       "retrieval_allowed": true,
       "version_status": "customer_supplied_links_not_historical_document_bytes"
+    },
+    {
+      "document_id": "recovery_250d60c4e44f",
+      "source_url": "https://healthweb-back.health.ny.gov/health_care/medicaid/redesign/mrt90/mltc_policy/2025/25-04.htm",
+      "raw_sha256": "1082e82b20d9bed4813f038ee638b942d83be49ccff1a00781b7a2645cd386ab",
+      "retrieval_allowed": true,
+      "version_status": "alternate_current_representation_historical_byte_equivalence_not_established",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "recovery_29c7ad78453d",
+      "source_url": "https://healthweb-back.health.ny.gov/health_care/managed_care/plans/appeals/2025_july/iad_no_ac.pdf",
+      "raw_sha256": "222df83cd6d3c10aa6e1c0af65028c12f939fdfc25c3bf3d6caa54f596d7c757",
+      "retrieval_allowed": true,
+      "version_status": "July_2025_template_distinct_from_missing_2017_template",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "recovery_2eb47db81700",
+      "source_url": "https://healthweb-back.health.ny.gov/health_care/managed_care/plans/appeals/2025_july/fad_no_ac.pdf",
+      "raw_sha256": "0bda9084883ff1da693e0ba66ec0436133857bc8fb05a78c39982e6ebffe77f5",
+      "retrieval_allowed": true,
+      "version_status": "July_2025_template_distinct_from_missing_2017_template",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "recovery_553e08105ccc",
+      "source_url": "https://healthweb-back.health.ny.gov/health_care/managed_care/plans/appeals/2025_july/iad_with_ac.pdf",
+      "raw_sha256": "d7e1e1e6664fdf5d9c3be55d6a98d99f494620792386a32c87db24ff093c4fd6",
+      "retrieval_allowed": true,
+      "version_status": "July_2025_template_distinct_from_missing_2017_template",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "recovery_5837ba7468a2",
+      "source_url": "https://healthweb-back.health.ny.gov/health_care/managed_care/plans/appeals/2025_july/fad_with_ac.pdf",
+      "raw_sha256": "6e1d068f895d89f9ebe743db371508638e430b0a891895466aab65673208044a",
+      "retrieval_allowed": true,
+      "version_status": "July_2025_template_distinct_from_missing_2017_template",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "workbook_014f0e5abc14",
+      "source_url": "https://healthweb-back.health.ny.gov/health_care/medicaid/redesign/mrt90/plan_directory/index.htm",
+      "raw_sha256": "950f2c01fc208cacb4ad9ae47601ce90146c991db16323686e323bc7dee3d651",
+      "retrieval_allowed": false,
+      "version_status": "client_workbook_exact_target_actual_content_dates_retained",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "workbook_241dae83799a",
+      "source_url": "https://healthweb-back.health.ny.gov/health_care/medicaid/publications/",
+      "raw_sha256": "621cd50cf67c205a33e8662820e3d25be83491e24bfec92679d1d5a3a37a740f",
+      "retrieval_allowed": false,
+      "version_status": "client_workbook_exact_target_actual_content_dates_retained",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "workbook_bb64f056f9e7",
+      "source_url": "https://www.cssny.org/programs/entry/fe-abd",
+      "raw_sha256": "62eefa5f4fc0987ec93266f4cc3ce5bf260c2fe958af58110a54b044e60e067e",
+      "retrieval_allowed": true,
+      "version_status": "client_workbook_exact_target_actual_content_dates_retained",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "workbook_d972f9112948",
+      "source_url": "https://nystateofhealth.ny.gov/",
+      "raw_sha256": "3cfb173b3de709cd4c17177f8c9191da60f52a0f1b815cfbe3edf28e3d4f992c",
+      "retrieval_allowed": false,
+      "version_status": "client_workbook_exact_target_actual_content_dates_retained",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "workbook_e9cfe0642bf7",
+      "source_url": "https://healthweb-back.health.ny.gov/health_care/medicaid/redesign/mrt90/mltc_policy/2026/26-01.htm",
+      "raw_sha256": "d9e23f5818fef05e2747e0187bffc55b0060de161ede73cc1d2def1c5d820e67",
+      "retrieval_allowed": true,
+      "version_status": "client_workbook_exact_target_actual_content_dates_retained",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "workbook_ed5b60eabb4e",
+      "source_url": "https://healthweb-back.health.ny.gov/health_care/medicaid/reference/mrg/mrg.pdf",
+      "raw_sha256": "0d23a91de7d74ab6cbf2da5f68198a21f577532f688b601afc4574d447df2017",
+      "retrieval_allowed": true,
+      "version_status": "client_workbook_exact_target_actual_content_dates_retained",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
+    },
+    {
+      "document_id": "workbook_fb518e88454a",
+      "source_url": "https://www.medicaid.gov/medicaid/section-1115-demonstrations/downloads/ny-mrt-mhgbi-1115-ip-apprv-ltr-attchmts-09162026.pdf",
+      "raw_sha256": "593d5b02f6e5a8ad8f93ccd641a7f521c0beed823af985e9d51e719a1fcbe828",
+      "retrieval_allowed": true,
+      "version_status": "client_workbook_exact_target_actual_content_dates_retained",
+      "activation_status": "shared_release_with_complete_local_Titan_vectors",
+      "source_selection_basis": "client_workbook_or_user_authorized_source_recovery"
     }
   ]
 }

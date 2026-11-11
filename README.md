@@ -25,7 +25,7 @@ make setup
 make run
 ```
 
-`make setup` installs the small Python runtime and automatically downloads and verifies the roughly 208 MB [data release](https://github.com/swkarlekar/health-research-oracle-public/releases/tag/data-2026-11-08): documents, PDFs, document vectors, and relationship map. It does not download an LLM or create AWS resources. `make run` opens the local page in Chrome. Keep the terminal running; Ctrl+C stops the server. On subsequent visits, sign into AWS and run `make run` from the project folder.
+`make setup` installs the small Python runtime and automatically downloads and verifies the 316 MB [data release](https://github.com/swkarlekar/health-research-oracle-public/releases/tag/data-2026-11-11): documents, PDFs, document vectors, and relationship map. It does not download an LLM or create AWS resources. `make run` opens the local page in Chrome. Keep the terminal running; Ctrl+C stops the server. On subsequent visits, sign into AWS and run `make run` from the project folder.
 
 Open **⚙ Model settings**, check your AWS account, select a model, and explicitly authorize a small spending allowance before asking a new question. Merely opening the app or saving a model choice does not authorize paid calls. Each collaborator uses their own AWS account; no keys or credentials are shared with the project.
 
@@ -92,11 +92,13 @@ For a concrete look at the instructions, see **[prompt examples and the actual p
 
 The [latest advocate-case optimization](docs/advocate-optimization.md) tested revised prompts and retrieval against the supplied reference answers. It improved some responses but failed important relevance and applicability checks. Its code remains on an [experimental branch](https://github.com/swkarlekar/health-research-oracle-public/tree/experiment/advocate-ground-truth); the default answer pipeline is unchanged. [Exact responses](docs/advocate-optimization-examples.md) and an [independent review](docs/advocate-independent-review.md) explain the results.
 
+The [thinking-mode comparison](docs/reasoning-comparison.md) records fresh Qwen thinking-off/on runs on the four simplified questions, including failures, exact responses, latency and cost. It also records access failures for Haiku/Grok and structured-output failures for the requested Llama and GPT-OSS alternatives; none established a reliable replacement.
+
 This is a research prototype, not a validated legal advice system. Matching quotations and a favorable LLM review do not prove legal correctness or completeness. Testing has found missed conditions, wrong-program applicability, unsupported conclusions, and operational rejections. The [prompt experiments](docs/prompt-search.md) improved some results but did not establish reliable legal synthesis. A narrow request-boundary guard is enabled; experimental source-answering pipelines have not replaced the production drafting/review prompts.
 
 In the [advocate-case comparison](docs/advocate-comparison.md), six of seven question variants stopped before source search, and the remaining run missed relevant indexed passages. None produced a substantive cited answer.
 
-The current package contains **58 evidence-producing documents and 4,572 chunks**, from 108 source records; 26 acquired indexes are excluded from evidence retrieval and 24 targets were unavailable. Research is limited to the supplied sources. Do not enter client identifiers or ask the system to access private case records, decide an individual violation, guarantee an outcome, or recommend client-specific action steps.
+The current package contains **81 evidence-producing documents and 7,044 searchable chunks**, from 120 source records; 38 acquired indexes are excluded from evidence retrieval and one private target remains unavailable. The [source recovery audit](docs/source-recovery.md) explains coverage of the client workbook and original resource list, historical/secondary copies, and the confidential training document excluded from sharing. Research is limited to the supplied sources. Do not enter client identifiers or ask the system to access private case records, decide an individual violation, guarantee an outcome, or recommend client-specific action steps.
 
 ## Further reading
 

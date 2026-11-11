@@ -141,6 +141,28 @@ def _distribution_vectors(source, destination, snapshot_sha256=None):
         'distance_metric', 'vector_count', 'snapshot_sha256')}
     if snapshot_sha256:
         manifest['snapshot_sha256'] = snapshot_sha256
+    # Keep the mixed-cache audit without copying private execution/resource data.
+    # New direct Titan vectors do not represent managed Knowledge Base sync state.
+    if original.get('provenance_version') == 1:
+        if original.get('normalize') is not True:
+            raise HarnessError('Incremental Titan provenance must declare normalized embeddings')
+        counts = original.get('vector_origin_counts', {})
+        if (set(counts) != {'reused_managed_export', 'direct_titan_incremental'}
+                or any(type(n) is not int or n < 0 for n in counts.values())
+                or sum(counts.values()) != manifest['vector_count']):
+            raise HarnessError('Vector origin counts do not match the cache')
+        provenance = original.get('embedding_provenance', {})
+        hashes = {key: provenance.get(key) for key in
+                  ('baseline_snapshot_sha256', 'baseline_embedding_values_sha256')}
+        if any(not isinstance(value, str) or not re.fullmatch(r'[0-9a-f]{64}', value)
+               for value in hashes.values()):
+            raise HarnessError('Vector provenance lacks a valid baseline checksum')
+        manifest.update(provenance_version=1, normalize=True, vector_origin_counts=counts,
+            embedding_provenance={**hashes, 'kind': 'mixed_managed_export_and_direct_titan',
+                'old_values_preserved': provenance.get('old_values_preserved') is True,
+                'public_subset_derived_without_reembedding':
+                    provenance.get('public_subset_derived_without_reembedding') is True,
+                'managed_knowledge_base_sync_equivalent': False})
     with closing(sqlite3.connect(f'{Path(source).resolve().as_uri()}?mode=ro', uri=True)) as incoming, \
             closing(sqlite3.connect(destination)) as outgoing:
         outgoing.executescript('CREATE TABLE vectors(key TEXT PRIMARY KEY,data BLOB NOT NULL,metadata TEXT NOT NULL);'

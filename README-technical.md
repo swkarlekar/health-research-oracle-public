@@ -45,7 +45,7 @@ python3 scripts/run_demo.py --port 8766
 | Chat history, debug, and settings | Local `artifacts/ui/`; never included in the data release |
 | Grants, counters, and spend ledger | Local ignored artifacts; never committed or distributed |
 
-The data release contains source documents, processed corpus, vectors, and graph. It excludes query caches, chat history, credentials, grants, model weights, and experiment outputs. See the [bundle contract and restore process](docs/data-bundle.md). The archive is about 208 MB; the relationship database is about 50.5 MB and document-vector cache about 34.7 MB. The corpus SQLite database is about 36.9 MB. These are distinct files, not separate copies of a hosted knowledge graph.
+The data release contains source documents, processed corpus, vectors, and graph. It excludes query caches, chat history, credentials, grants, model weights, and experiment outputs. See the [bundle contract and restore process](docs/data-bundle.md). The current archive is about 316 MB; the relationship database is about 71.7 MB and document-vector cache about 53.3 MB. The corpus SQLite database is about 57.4 MB. The [recovery audit](docs/source-recovery.md) records source coverage, mixed vector origins and remaining ranking gaps. These are distinct files, not separate copies of a hosted knowledge graph.
 
 Local vector search performs exhaustive cosine comparison over the same exported vectors and resolves every hit to canonical local text. The 15 saved AWS searches returned the same top-K chunk sets locally in all 15 cases, with ranking differences in three. This is measured parity for those questions, not a guarantee of identical future results. The same local graph and expansion harness follow either retrieval adapter. No re-embedding of documents is required for a new laptop or a generation-model change. Replacing Titan with another embedding model would require compatible document and query vectors and a new index plan.
 
@@ -104,3 +104,5 @@ The CSSNY logo is the unchanged [official website SVG](https://smhttp-ssl-58547.
 ## Advocate-case optimization record
 
 The [final report](docs/advocate-optimization.md) and [independent review](docs/advocate-independent-review.md) document the experimental prompt/retrieval candidate. It was not promoted after substantive source-selection and applicability failures. The default architecture and prompts described above remain in use. Candidate code and prompt documentation are available on the linked experimental branch.
+
+The [thinking-mode comparison](docs/reasoning-comparison.md) records explicit Bedrock Qwen high reasoning plus Haiku, Grok, Llama and GPT-OSS access/structured-output trials. These adapter changes remain experimental and do not enable paid calls or change the default demo.

@@ -140,6 +140,28 @@ class BundleTests(unittest.TestCase):
             self.assertEqual(set(json.loads(encoded)), set(PUBLIC_VECTOR_FIELDS))
             self.assertNotIn('original_resources', json.loads(con.execute('SELECT json FROM manifest').fetchone()[0]))
 
+    def test_mixed_vector_origins_survive_export_without_private_execution_metadata(self):
+        path = self.root / 'artifacts/aws-eval/vector-cache.sqlite'
+        with sqlite3.connect(path) as con:
+            manifest = json.loads(con.execute('SELECT json FROM manifest').fetchone()[0])
+            manifest.update(provenance_version=1, normalize=True,
+                vector_origin_counts={'reused_managed_export': 0, 'direct_titan_incremental': 1},
+                embedding_provenance={'baseline_snapshot_sha256': 'a' * 64,
+                    'baseline_embedding_values_sha256': 'b' * 64, 'old_values_preserved': True,
+                    'public_subset_derived_without_reembedding': True,
+                    'managed_knowledge_base_sync_equivalent': True,
+                    'private_account': 'PRIVATE_SENTINEL'})
+            con.execute('UPDATE manifest SET json=?', (base.canonical(manifest),))
+        export_bundle(self.root, self.archive)
+        relocated = Path(self.temporary.name) / 'mixed-public'
+        install_bundle(self.archive, relocated)
+        with sqlite3.connect(relocated / 'artifacts/aws-eval/vector-cache.sqlite') as con:
+            public = json.loads(con.execute('SELECT json FROM manifest').fetchone()[0])
+        self.assertEqual(public['vector_origin_counts'], manifest['vector_origin_counts'])
+        self.assertEqual(public['embedding_provenance']['baseline_snapshot_sha256'], 'a' * 64)
+        self.assertFalse(public['embedding_provenance']['managed_knowledge_base_sync_equivalent'])
+        self.assertNotIn('PRIVATE_SENTINEL', json.dumps(public))
+
     def test_unavailable_sharing_url_derives_snapshot_and_explicit_historical_review_provenance(self):
         private = 'https://tenant.sharepoint.com/:b:/s/team/PRIVATE_LINK?e=PRIVATE_ACCESS'
         (self.processed / 'corpus_summary.json').write_text(json.dumps({'unavailable_by_listed_host': {'tenant.sharepoint.com': 1}}))

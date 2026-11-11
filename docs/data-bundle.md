@@ -5,48 +5,50 @@ and relationship map are distributed as a separate **GitHub Release asset**. The
 setup command downloads and installs the pinned asset; manual unzipping is not
 required.
 
-The first snapshot is `data-2026-11-08`, with asset
-`oracle-data-public-f63013298e2f-v2.zip`. Its companion manifest and SHA-256 file describe
+The current snapshot is `data-2026-11-11`, with asset
+`oracle-data-public-915db3bb0c7c.zip`. Its companion manifest and SHA-256 file describe
 every included file. `config/data-release.json` pins the archive hash for setup.
+The [recovery audit](source-recovery.md) reconciles the original resource PDF and
+client-supplied XLSX, including aliases, indexes and distribution exclusions.
 
 The archive contains only:
 
-- Canonical SQLite corpus, document/section/chunk JSONL, and processing summaries.
-- The 84 original files referenced by this snapshot, including PDFs and HTML.
-- The local SQLite relationship map and the exported Titan vector database.
+- Canonical SQLite corpus, document/section/chunk JSONL and processing summaries.
+- The 119 acquired originals referenced by this snapshot, including PDFs and HTML.
+- The local SQLite relationship map and Titan document-vector database.
 - The source registry and temporal policy that bind those data together.
 
 It excludes AWS credentials/profiles, spending grants, budgets, query-embedding
 caches, chat history, evaluation answers, application code, model weights, logs,
 and obsolete/unreferenced files. Each laptop creates its own AWS authorization,
-budget, query cache, and history. The distribution vector database includes only
-canonical source fields; managed AWS account, bucket, index, knowledge-base, and
-data-source identifiers are removed. Its float32 embeddings are unchanged.
+budget, query cache and history. One confidential training document and all its
+derivatives are excluded. The supplied XLSX and acquisition audit files are not
+part of the Release. An unavailable source's access-bearing sharing URL remains
+replaced with an explicit `example.invalid/redacted-source/` placeholder.
 
-One unavailable source had a SharePoint sharing URL. The public copy replaces that
-access-bearing URL with an explicit `example.invalid/redacted-source/` placeholder.
-Its tenant hostname in aggregate acquisition counts is relabeled
-`redacted.invalidprovider`.
-That source had no acquired content, sections, chunks, or embeddings. This metadata
-change produces a new corpus snapshot and graph/vector bindings. The manifest
-records the derivation. All 90 historical relationship reviews retain their actors,
-dates, decisions, evidence, and candidate hashes; their derived records explicitly
-retain the original review ID, record hash, and snapshot and state that no new
-review was performed. Available source bytes, text, quote offsets, relationships,
-and all 4,572 embedding blobs remain unchanged. Maintainers retain the original
-private backup separately; it is not an asset for public distribution.
+This public snapshot has 120 source records: 81 evidence-producing documents,
+38 indexes and one unavailable source. It contains 7,044 chunks/vectors and
+11,807 relationship signals, with 198 review entries. Many relationships remain
+unresolved; a checksum does not certify legal currency or correctness. Historical
+reviews retain their actors, decisions and supporting spans with explicit
+snapshot-rebinding provenance; rebinding does not represent a new human review.
 
-This snapshot has 108 source records, 58 evidence-producing documents, 4,572
-chunks/vectors, and 10,991 relationship signals. Many relationships are unresolved;
-neither the dataset version nor a checksum certifies legal currency or correctness.
-New questions still require Titan query embeddings unless already cached. Local
-generation does not turn Titan into an offline embedding model.
+The vector cache combines 4,572 preserved managed-export embeddings with 2,472
+new direct Titan V2 embeddings. All use the same normalized 1,024-dimensional
+model/settings. The manifest retains the mixed origin counts and baseline hashes
+while removing AWS account, bucket, index, knowledge-base and data-source bindings.
+It is a local retrieval copy, not managed Knowledge Base synchronization state.
+New questions still require Titan query embeddings unless already cached.
+
+The earlier `data-2026-11-08` Release remains available for reproducing historical
+model comparisons. Those results were not rerun on the new data. The current
+package does not change the default generation/review prompts.
 
 For manual inspection or an already downloaded asset:
 
 ```sh
-python -m oracle.data_bundle verify path/to/oracle-data-public-f63013298e2f-v2.zip --sha256 PINNED_HASH
-python -m oracle.data_bundle install path/to/oracle-data-public-f63013298e2f-v2.zip --root . --sha256 PINNED_HASH
+python -m oracle.data_bundle verify path/to/oracle-data-public-915db3bb0c7c.zip --sha256 PINNED_HASH
+python -m oracle.data_bundle install path/to/oracle-data-public-915db3bb0c7c.zip --root . --sha256 PINNED_HASH
 ```
 
 Use the project's virtual-environment Python if `python` is not that interpreter.
@@ -72,8 +74,8 @@ sanitized databases in temporary staging, verifies their new bindings, and check
 that every original file remains unchanged. Fresh vector pages and vacuumed
 corpus/graph databases prevent removed metadata from surviving in unused SQLite
 pages. Export never rewrites the working corpus or historical experiment data.
-Before publication, the real snapshot was
-exported, verified, and installed under a different temporary root with every
-socket connection blocked. All 4,572 vector identities and 84 original-source
-hashes passed; a 13-page PDF opened through the relocated citation viewer. No LLM,
-GPU, or AWS call was involved.
+Before publication, the new snapshot was exported, verified and installed under
+a separate temporary root with socket connections blocked. Verification checked
+all 7,044 canonical vector identities, all 119 raw-file hashes and relocated PDF
+viewing. The 4,572 old vector values are also compared byte-for-byte against the
+preserved original cache. These checks do not require an LLM, GPU or AWS call.
