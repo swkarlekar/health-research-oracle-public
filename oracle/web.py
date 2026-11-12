@@ -80,6 +80,7 @@ class LocalApp:
         self.settings_lock = threading.Lock()
         self.viewer_lock = threading.Lock()
         self.viewers = OrderedDict()
+        self.library_lock, self._library = threading.Lock(), None
         self.token = secrets.token_urlsafe(32)
         self.history.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as con:
@@ -133,30 +134,38 @@ class LocalApp:
             stack.callback(graph.close)
             yield ExpandedCorpus(retriever, graph, max_total_chars=self.context_chars)
 
+    def library_data(self):
+        """Verified list and text of every approved document, built once. Opening the saved graph is the slow part."""
+        with self.library_lock:
+            if self._library is None:
+                with self.source_corpus() as corpus:
+                    items = library.entries(corpus.retriever.connection, corpus.retriever.policy)
+                    docs = {}
+                    for item in items:
+                        doc = dict(corpus._document(item['id']))
+                        doc['title'] = item['title']
+                        docs[item['id']] = doc
+                self._library = (items, docs)
+            return self._library
+
     def documents(self, query=''):
-        with self.source_corpus() as corpus:
-            items = library.entries(corpus.retriever.connection, corpus.retriever.policy)
-            query = ' '.join(query.split())[:200]
-            if not query:
-                return {'documents': items, 'categories': [{'id': k, 'label': v} for k, v in library.CATEGORIES]}
-            by_id = {item['id']: item for item in items}
-            hits = library.search_text(corpus.retriever.connection, set(by_id), query)
-            return {'query': query, 'matches': [{**by_id[hit['id']], 'page': hit['page'], 'snippet': hit['snippet']} for hit in hits]}
+        items, _ = self.library_data()
+        query = ' '.join(query.split())[:200]
+        if not query:
+            return {'documents': items, 'categories': [{'id': k, 'label': v} for k, v in library.CATEGORIES]}
+        by_id = {item['id']: item for item in items}
+        retriever = ApprovedCorpus(self.db, self.registry)
+        try:
+            hits = library.search_text(retriever.connection, set(by_id), query)
+        finally:
+            retriever.close()
+        return {'query': query, 'matches': [{**by_id[hit['id']], 'page': hit['page'], 'snippet': hit['snippet']} for hit in hits]}
 
     def document_viewer(self, identity):
-        if not re.fullmatch(r'[A-Za-z0-9_]{1,80}', identity):
+        _, docs = self.library_data()
+        if identity not in docs:
             raise HarnessError('Document not found')
-        with self.source_corpus() as corpus:
-            try:
-                doc = corpus._document(identity)
-            except KeyError:
-                raise HarnessError('Document not found')
-            doc = dict(doc)
-            items = {item['id']: item for item in library.entries(corpus.retriever.connection, corpus.retriever.policy)}
-            if identity not in items:
-                raise HarnessError('Document not found')
-            doc['title'] = items[identity]['title']
-            return doc
+        return docs[identity]
 
     def selected_model(self):
         value = self.models.value
@@ -525,6 +534,7 @@ def serve(args):
         server.app = LocalApp(args.db, args.registry, args.graph, args.history,
                               context_chars=args.context_chars, retriever='local-vector',
                               vector_cache=args.vector_cache, query_cache=args.query_cache)
+        threading.Thread(target=server.app.library_data, daemon=True).start()  # warm the document list
         print(f'TRACE: http://127.0.0.1:{server.server_address[1]} (local only)', flush=True)
         server.serve_forever()
     except KeyboardInterrupt:
