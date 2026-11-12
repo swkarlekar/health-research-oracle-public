@@ -75,13 +75,14 @@ def search_text(connection, allowed, query, limit=12):
         return []
     expression = ' '.join('"' + term + '"' + ('*' if len(term) >= 3 else '') for term in terms)
     rows = connection.execute(
-        'SELECT c.document_id,c.page,snippet(chunks_fts,3,?,?,?,22),bm25(chunks_fts,0,0.1,0.2,1) AS score '
+        'SELECT c.document_id,c.metadata_json,snippet(chunks_fts,3,?,?,?,22),bm25(chunks_fts,0,0.1,0.2,1) AS score '
         'FROM chunks_fts f JOIN chunks c ON c.chunk_id=f.chunk_id WHERE chunks_fts MATCH ? '
         'ORDER BY score LIMIT 200', (HIGHLIGHT_OPEN, HIGHLIGHT_CLOSE, '…', expression)).fetchall()
     found = {}
-    for identity, page, snippet, _ in rows:
+    for identity, meta, snippet, _ in rows:
         if identity in allowed and identity not in found:
-            found[identity] = {'id': identity, 'page': page, 'snippet': ' '.join(snippet.split())}
+            page = json.loads(meta).get('page')
+            found[identity] = {'id': identity, 'page': page if type(page) is int else None, 'snippet': ' '.join(snippet.split())}
         if len(found) >= limit:
             break
     return list(found.values())
