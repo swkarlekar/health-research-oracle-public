@@ -71,6 +71,19 @@ The sidebar has two tabs. **Research** holds your conversations and the example 
 - **Choose the models.** By default Qwen3 32B on Amazon Bedrock plans the search and screens passages, and Mistral Large 3 writes the answer. Settings also offers Nova Lite and Nova Pro, or a model already installed in Ollama, LM Studio, or another local server.
 - **Inspect a run.** **View debug report** shows every step: the search plan, the passages read, the instructions given to the model, and what each step returned.
 
+### More examples
+
+| | |
+| --- | --- |
+| ![Progress steps while a question runs](docs/screenshots/ui-progress.jpg) | ![Service Legacy question: direct answer with its source](docs/screenshots/ui-answer-service-legacy.jpg) |
+| Step tracker while a question runs | Service Legacy status (Minimum Needs Requirement) |
+| ![Medicare and Medicaid DME question with three sources](docs/screenshots/ui-answer-dme.jpg) | ![Follow-up turn in the same thread](docs/screenshots/ui-thread-follow-up.jpg) |
+| Medicare or MLTC for DME: one chip per source, a button per page | A follow-up sent from a suggested question, same thread |
+| ![Supporting findings with source chips](docs/screenshots/ui-supporting-findings.jpg) | ![Title matches highlighted in the Documents tab](docs/screenshots/ui-documents-title-match.jpg) |
+| Supporting findings, each with its sources | Search terms highlighted in matching titles |
+| ![Statute opened with find-in-document](docs/screenshots/ui-document-statute-find.jpg) | ![Documents search with no results](docs/screenshots/ui-documents-no-results.jpg) |
+| Statute opened from the Documents tab, match highlighted | No-match state |
+
 The answer screenshots use the sample questions from the CSSNY design brief, answered on Bedrock. The model settings screenshot above is from an earlier version of the interface.
 
 ## How the harness works
