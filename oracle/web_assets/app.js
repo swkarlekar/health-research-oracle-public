@@ -40,25 +40,46 @@ function citationLabel(ref) {
   const pages=ref.page_end && ref.page_end!==ref.page?`${ref.page}–${ref.page_end}`:ref.page;
   return title+(pages?` · p. ${pages}`:'');
 }
-function cite(ref,run) {
-  const index=(run.answer?.quotes||[]).findIndex(q=>q.citation.evidence_id===ref.evidence_id);
-  if(index<0) return safeLink(ref.source_url,ref.title||'Source');
-  return el('button',{class:'citation-button',onClick:()=>openSource(run.id,index)},'▤ ',citationLabel(run.answer.quotes[index].citation),' ↗');
+function shortTitle(title) {title=title||'Source document';return title.length>64?title.slice(0,61)+'…':title;}
+function citeGroup(refs,run) {
+  // One chip per source; each cited page is its own button into the document.
+  const groups=new Map();
+  for(const ref of refs||[]){const key=ref.title||ref.source_url||'?';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(ref);}
+  return [...groups.values()].map(list=>{
+    const quotes=run.answer?.quotes||[];
+    const open=ref=>{const index=quotes.findIndex(q=>q.citation.evidence_id===ref.evidence_id);return index<0?null:index;};
+    const pages=list.map(ref=>({ref,index:open(ref),page:ref.page&&ref.page_end&&ref.page_end!==ref.page?`${ref.page}–${ref.page_end}`:ref.page}));
+    const reachable=pages.filter(item=>item.index!==null);
+    if(!reachable.length)return safeLink(list[0].source_url,shortTitle(list[0].title));
+    const seen=new Set(),buttons=[];
+    reachable.sort((a,b)=>(a.ref.page??1e9)-(b.ref.page??1e9));
+    for(const item of reachable){
+      const label=item.page?'p. '+item.page:'view';if(seen.has(label))continue;seen.add(label);
+      buttons.push(el('button',{type:'button',class:'page-link',title:'Open the document at this passage',onClick:()=>openSource(run.id,item.index)},label));
+    }
+    return el('span',{class:'source-chip'},el('span',{class:'source-name',title:list[0].title||''},'▤ '+shortTitle(list[0].title)),...buttons);
+  });
 }
 const statusNames={supported:'Research result',partial:'Partial answer',currency_unverified:'Date unverified',conflicting_sources:'Sources differ',clarification_needed:'More information needed',not_found:'No suitable answer found',failed:'No accepted answer'};
+const PROGRESS_STEPS=['Check request','Plan search','Read passages','Choose key passages','Write answer','Verify'];
+function progressStep(progress) {
+  const p=progress||'';
+  if(p.includes('request_classification')||p.includes('public_research_check'))return 0;
+  if(/model_started:plan/.test(p))return 1;
+  if(p==='research_search'||/model_started:read/.test(p)||p==='research_read'||/model_started:.*(?:draft|selection)/.test(p))return 2;
+  if(/model_started:triage/.test(p))return 3;
+  if(/model_started:answer/.test(p))return 4;
+  if(/model_started:(?:verify|doubts)/.test(p)||/model_started:.*review/.test(p)||p==='final_validation'||p==='draft_validation')return 5;
+  return 1;
+}
 function progressLabel(progress) {
-  if(progress?.includes('request_classification')||progress?.includes('public_research_check'))return 'Checking the research request…';
-  if(/model_started:plan/.test(progress||''))return 'Planning the search…';
-  if(progress==='research_search'||/model_started:read/.test(progress||'')||progress==='research_read')return 'Reading candidate passages…';
-  if(/model_started:triage/.test(progress||''))return 'Choosing the key passages…';
-  if(/model_started:answer/.test(progress||''))return 'Writing the answer…';
-  if(/model_started:(?:verify|doubts)/.test(progress||''))return 'Checking each finding against its source…';
-  if(/model_started:.*review/.test(progress||''))return 'Checking support, dates, and exceptions…';
-  if(/model_started:.*(?:draft|selection)/.test(progress||''))return 'Reading the retrieved sources…';
-  if(progress==='additional_retrieval_and_expansion')return 'Looking for additional source material…';
-  if(progress==='final_validation')return 'Validating quotations and citations…';
-  if(progress==='draft_validation')return 'Preparing the independent review…';
-  return 'Searching the corpus and following source connections…';
+  return ['Checking the research request…','Planning the search…','Reading candidate passages…','Choosing the key passages…','Writing the answer…','Checking each finding against its source…'][progressStep(progress)];
+}
+function pendingView(progress) {
+  const at=progressStep(progress);
+  return el('div',{class:'pending-block',role:'status'},
+    el('div',{class:'pending'},el('span',{class:'spinner','aria-hidden':'true'}),progressLabel(progress)),
+    el('ol',{class:'steps','aria-label':'Research steps'},...PROGRESS_STEPS.map((name,i)=>el('li',{class:i<at?'done':i===at?'active':''},name))));
 }
 function inline(text) {
   // Models sometimes emphasise with *asterisks*; show emphasis, never the raw markers.
@@ -68,13 +89,17 @@ function askFollowUp(question) {
   const box=$('question');box.value=question;box.focus();box.setSelectionRange(question.length,question.length);
   box.scrollIntoView({block:'nearest'});
 }
+function sendQuestion(question) {
+  if(state.busy){message('Please wait for the current research to finish.');return;}
+  $('question').value=question;$('use-history').checked=true;$('question-form').requestSubmit();
+}
 function renderRun(run) {
   const turn=el('article',{class:'turn',id:'run-'+run.id});
   turn.append(el('div',{class:'user-message'},run.question));
   const answer=el('div',{class:'answer'});
   answer.append(el('div',{class:'answer-label'},el('img',{class:'answer-symbol',src:'/trace-logo.svg',alt:''}),'TRACE',run.saved_example?el('small',{},run.saved_example===2?'Saved Bedrock run':'Saved local run'):null));
   if(run.status==='running') {
-    answer.append(el('div',{class:'pending'},el('span',{class:'spinner','aria-hidden':'true'}),progressLabel(run.progress)));
+    answer.append(pendingView(run.progress));
     turn.append(answer);return turn;
   }
   if(run.status==='failed') {
@@ -84,13 +109,25 @@ function renderRun(run) {
   }
   const result=run.answer;
   if(!result){turn.append(answer);return turn;}
-  answer.append(el('span',{class:'status-chip '+(result.status==='supported'?'':'qualified')},result.request_boundary_only?'Research request limit':statusNames[result.status]||human(result.status)));
-  if(result.status==='partial')answer.append(el('p',{class:'status-description'},'The evidence supports part of the question. The unresolved points are listed below.'));
+  const uncertainties=result.uncertainties||[];
+  const gaps=uncertainties.filter(u=>u.kind==='not_addressed').length,checks=uncertainties.length-gaps;
+  let chipText=result.request_boundary_only?'Research request limit':statusNames[result.status]||human(result.status);
+  if(result.status==='partial'&&!result.request_boundary_only)chipText=gaps?'Answered in part':'Answered · '+checks+(checks===1?' point':' points')+' to check';
+  const chip=el('span',{class:'status-chip '+(result.status==='supported'?'':'qualified')},chipText);
+  const status=el('div',{class:'status-row'},chip);
+  if(uncertainties.length&&!result.request_boundary_only)status.append(el('a',{class:'jump-link',href:'#unresolved-'+run.id,onClick:event=>{event.preventDefault();$('unresolved-'+run.id)?.scrollIntoView({behavior:'smooth',block:'center'});}},uncertainties.length+(uncertainties.length===1?' open point':' open points')+' ↓'));
+  answer.append(status);
+  if(result.status==='partial'&&gaps)answer.append(el('p',{class:'status-description'},'The sources address part of the question. What they leave open is listed below.'));
   if(result.request_boundary_only)answer.append(el('p',{},'This request was checked against the research-only boundary. No source search was run.'));
   else if(result.status==='not_found')answer.append(el('p',{},'I could not establish a suitable answer from the supplied evidence. This does not mean that no rule exists.'));
-  if(result.findings?.length) {
-    answer.append(el('h3',{class:'section-heading'},'What the evidence supports'));
-    for(const finding of result.findings)answer.append(el('div',{class:'finding'},el('p',{},inline(finding.text)),...(finding.citations||[]).map(ref=>cite(ref,run))));
+  const findings=result.findings||[];
+  if(findings.length) {
+    const [lead,...rest]=findings;
+    answer.append(el('section',{class:'lead-answer','aria-label':'Answer'},el('div',{class:'lead-label'},'ANSWER'),el('p',{},inline(lead.text)),el('div',{class:'source-row'},...citeGroup(lead.citations,run))));
+    if(rest.length){
+      answer.append(el('h3',{class:'section-heading'},'Supporting findings'));
+      for(const finding of rest)answer.append(el('div',{class:'finding'},el('p',{},inline(finding.text)),el('div',{class:'source-row'},...citeGroup(finding.citations,run))));
+    }
   }
   if(result.quotes?.length) {
     const language=el('details',{class:'source-language',...(!result.findings?.length?{open:''}:{})},el('summary',{class:'section-heading'},`Verbatim source passages (${result.quotes.length})`));
@@ -103,10 +140,11 @@ function renderRun(run) {
     }
     answer.append(language);
   }
-  const uncertainties=result.uncertainties||[];
-  if(uncertainties.length)answer.append(el('section',{class:'uncertainties'},el('h3',{class:'section-heading'},result.request_boundary_only?'Research boundaries':'What remains unresolved'),el('ul',{},...uncertainties.map(u=>el('li',{},inline(u.description))))));
-  const questions=[...(result.clarifying_questions||[]),...uncertainties.map(u=>u.question_for_user).filter(Boolean)];
-  if(questions.length)answer.append(el('section',{class:'clarifications'},el('h3',{class:'section-heading'},'More information needed'),el('p',{class:'clarify-hint'},'Select a question to copy it into the message box, then edit and send it.'),el('ul',{class:'clarify-list'},...[...new Set(questions)].map(q=>el('li',{},el('button',{type:'button',class:'follow-up',onClick:()=>askFollowUp(q)},inline(q)))))));
+  if(uncertainties.length)answer.append(el('section',{class:'uncertainties',id:'unresolved-'+run.id},el('h3',{class:'section-heading'},result.request_boundary_only?'Research boundaries':'What remains open'),el('ul',{},...uncertainties.map(u=>el('li',{},inline(u.description))))));
+  const followUps=[...new Set(uncertainties.map(u=>u.question_for_user).filter(Boolean))];
+  const scopeQuestions=[...new Set(result.clarifying_questions||[])];
+  if(followUps.length)answer.append(el('section',{class:'follow-ups'},el('h3',{class:'section-heading'},'Ask a follow-up'),el('div',{class:'chip-list'},...followUps.map(q=>el('button',{type:'button',class:'follow-chip',onClick:()=>sendQuestion(q)},inline(q))))));
+  if(scopeQuestions.length)answer.append(el('details',{class:'scope-questions'},el('summary',{},'Narrow the scope (optional)'),el('p',{class:'clarify-hint'},'Select a question to copy it into the message box, edit it, and send.'),el('ul',{class:'clarify-list'},...scopeQuestions.map(q=>el('li',{},el('button',{type:'button',class:'follow-up',onClick:()=>askFollowUp(q)},inline(q)))))));
   answer.append(el('div',{class:'response-footer'},el('span',{},result.request_boundary_only?'Public-rule research only · No source search was run':'Based on the supplied corpus · Current applicability is not independently verified'),el('button',{class:'text-button',onClick:()=>openDebug(run.id)},'View debug report ↗')));
   turn.append(answer);return turn;
 }
@@ -163,6 +201,7 @@ async function poll(runId) {
       await new Promise(resolve=>setTimeout(resolve,1200));
     }
     await history();
+    $('run-'+runId)?.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(error){message(error.message);}
   finally{busy(false);}
 }
@@ -333,7 +372,7 @@ async function openSource(runId,index) {
     const base=`/api/runs/${runId}/quotes/${index}`,data=await api(base);
     if(serial!==state.viewerSerial)return;
     state.viewer={...data,base,runId,index,currentPage:data.page};
-    $('source-heading').textContent=data.title||'Source document';$('selected-quote').textContent=data.quote;
+    const known=state.library.docs?.find(doc=>doc.url===data.source_url);$('source-heading').textContent=known?.title||data.title||'Source document';$('selected-quote').textContent=data.quote;
     const official=safeLink(data.source_url,'Official source ↗');$('official-link').replaceWith(Object.assign(official,{id:'official-link'}));
     $('original-link').href=base+'/original'+(data.page?'#page='+data.page:'');$('original-link').hidden=!data.original_available;
     $('document-pages').classList.remove('zoomed','hide-highlights');$('zoom').textContent='Zoom in';$('zoom').setAttribute('aria-pressed','false');$('toggle-highlights').textContent='Highlights on';$('toggle-highlights').setAttribute('aria-pressed','true');
@@ -452,10 +491,10 @@ function highlightTitle(title,tokens) {
 function docItem(doc,extra={}) {
   const active=state.viewer?.docId===doc.id&&$('source-dialog').open;
   const kind=doc.kind==='pdf'?'PDF':'Web';
-  const button=el('button',{class:'doc-item'+(active?' active':''),type:'button','data-id':doc.id,title:doc.title,onClick:()=>openDocument(doc,extra.open||{})},
+  const button=el('button',{class:'doc-item'+(active?' active':''),type:'button','data-id':doc.id,title:doc.title,onClick:()=>extra.onOpen?extra.onOpen():openDocument(doc,extra.open||{})},
     el('span',{class:'doc-title'},highlightTitle(doc.title,extra.tokens)),
     extra.snippet?el('span',{class:'doc-snippet'},...extra.snippet):null,
-    el('span',{class:'doc-meta'},el('span',{class:'doc-kind '+doc.kind},kind),doc.host,extra.page?` · p. ${extra.page}`:''));
+    el('span',{class:'doc-meta'},el('span',{class:'doc-kind '+doc.kind},kind),doc.host,extra.page?` · p. ${extra.page}`:'',extra.badge?el('span',{class:'doc-badge'},extra.badge):null));
   return button;
 }
 function renderLibrary() {
@@ -466,7 +505,15 @@ function renderLibrary() {
     const cited=docs.filter(doc=>urls.has(doc.url));
     if(cited.length){
       nodes.push(el('div',{class:'doc-group cited'},el('span',{},'Cited in this research'),el('small',{},cited.length)));
-      nodes.push(...cited.map(doc=>docItem(doc)));
+      nodes.push(...cited.map(doc=>{
+        // Open at the passage the answer quoted, with it highlighted, from the most recent answer that cites this document.
+        for(const run of [...state.runs].reverse()){
+          const index=(run.answer?.quotes||[]).findIndex(quote=>quote.citation?.source_url===doc.url);
+          if(index>=0){const count=run.answer.quotes.filter(q=>q.citation?.source_url===doc.url).length;
+            return docItem(doc,{onOpen:()=>openSource(run.id,index),badge:count+(count===1?' quoted passage':' quoted passages')});}
+        }
+        return docItem(doc);
+      }));
     }
     for(const category of state.library.categories){
       const group=docs.filter(doc=>doc.category===category.id);if(!group.length)continue;

@@ -200,7 +200,7 @@ Fill the output fields in this order.
 
 Return JSON only."""
 
-VERIFY_POLICY = """You are checking a draft research answer for advocates who help New Yorkers with public health insurance
+VERIFY_POLICY = """You are checking a research answer for advocates who help New Yorkers with public health insurance
 problems. The advocate will quote these findings to a plan or a hearing officer, so each finding must say
 only what its cited passages say. You are given each finding with the full text of the passages it cites;
 each passage carries a label giving the kind of source.
@@ -224,12 +224,12 @@ not to rewrite it. Your job is to raise what a careful supervisor would want fla
 relies on it. Advocates have told us these flags are the most useful part of the tool, and that a confident
 answer that hides a doubt is worse than a flagged one - so when in doubt, raise it.
 
-Read the question, the draft answer and every passage, then list the doubts that are really there, most
+Read the question, the answer and every passage, then list the doubts that are really there, most
 important first. There is no quota: three is the most you may list, one or two is common, and none is the
 right answer when the passages settle the question in plain words. Look for:
 - a passage whose wording can fairly be read two ways, where the readings would change the answer - for
   example a sentence where it is unclear which group an exemption, an "unless", or a "must continue"
-  clause covers. If the draft answer has adopted one reading, say so and give the other;
+  clause covers. If the answer has adopted one reading, say so and give the other;
 - an exemption, exception, suspension or special rule in any passage that touches the situation in the
   question (a setting, a status, a type of enrollee, a time period) and that the answer either relies on or
   passes over;
@@ -247,6 +247,9 @@ Before you list a doubt, test it:
 - Is it about the rule or the source, not about missing facts of the client's case or how a plan happens
   to operate? If not, drop it.
 A doubt that survives should be raised even if you think one reading is more likely.
+Write plain text: no markdown, no asterisks, no quotation marks around single words. The advocate sees the answer
+as final, so say "the answer" - never "the draft" or "the draft answer" - and write "the answer adopts
+one reading" rather than "the draft assumes".
 
 For each doubt give:
 - issue: one or two plain sentences naming the kind of source and what is uncertain. Do not use passage ids
