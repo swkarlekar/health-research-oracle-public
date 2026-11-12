@@ -107,6 +107,27 @@ class ApprovedCorpus(base.Corpus):
             packet['packet_id'] = base.packet_hash(packet)
         return packet
 
+    def packet_from_chunks(self, question, scope, chunk_ids, retrieval):
+        """An evidence packet for chunks chosen by the research pipeline; same contract as packet()."""
+        from datetime import datetime, timezone
+        if not isinstance(question, str) or not question.strip() or len(question) > 1600:
+            raise HarnessError("Research question must contain 1 to 1600 characters")
+        evidence = []
+        for index, chunk_id in enumerate(dict.fromkeys(chunk_ids), 1):
+            item = self.chunk(chunk_id)
+            evidence.append(dict(item, evidence_id=f"E{index}", quote_candidates=base.quote_candidates(item["text"])))
+        full_scope = {"question": question, "program": scope.get("program"), "plan_type": scope.get("plan_type"),
+                      "research_date": scope.get("research_date"), "assumptions": []}
+        packet = {"schema_version": base.SCHEMA_VERSION, "created_at": datetime.now(timezone.utc).isoformat(),
+                  "scope": full_scope, "corpus": self.summary(),
+                  "retrieval": {**retrieval, "evidence_count": len(evidence)},
+                  "evidence": evidence,
+                  "human_resolutions": base.read_resolutions(ROOT / "artifacts/resolutions.jsonl", full_scope, evidence),
+                  "system_prompt": (base.CONFIG / "document_only_system.txt").read_text(encoding="utf-8"),
+                  "response_schema": base.load_json(base.CONFIG / "response.schema.json")}
+        packet["packet_id"] = base.packet_hash(packet)
+        return packet
+
     def expand(self, packet, query, limit=4):
         found = self.search(query, limit)
         ids = {e["chunk_id"] for e in packet["evidence"]}

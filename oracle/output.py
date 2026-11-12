@@ -133,6 +133,9 @@ class DebugTrace:
                       'missing_attributes': output.get('missing_attributes', [])}
         elif role == 'public_research_check':
             public = {key: output[key] for key in ('explicit_public_research', 'request_text') if key in output}
+        elif role in ('plan', 'read', 'triage', 'answer', 'verify', 'doubts'):
+            # Research-pipeline stages return only their public, structured contract.
+            public = copy.deepcopy(output)
         elif role == "draft":
             public = {k: output[k] for k in ("status", "findings", "quotes", "uncertainties", "clarifying_questions") if k in output}
         else:

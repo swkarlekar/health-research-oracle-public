@@ -27,6 +27,10 @@ PROCESSED = ('corpus.sqlite', 'documents.jsonl', 'sections.jsonl', 'chunks.jsonl
 FIXED = tuple('text_corpus/processed/' + name for name in PROCESSED) + (
     'artifacts/relationships.sqlite', 'artifacts/aws-eval/vector-cache.sqlite',
     'config/sources.json', 'config/temporal-policy.json')
+# Optional retrieval aid for the research pipeline (oracle/paragraphs.py). Bundles made before it existed
+# remain valid; when present it is verified against the same canonical snapshot as everything else.
+PARAGRAPH_PATH = 'artifacts/aws-eval/paragraph-vectors.sqlite'
+OPTIONAL = (PARAGRAPH_PATH,)
 MAX_BYTES, MAX_FILES = 2 * 1024**3, 10000
 VECTOR_PATH = 'artifacts/aws-eval/vector-cache.sqlite'
 PUBLIC_VECTOR_FIELDS = ('AMAZON_BEDROCK_TEXT', 'chunk_id', 'document_id',
@@ -46,7 +50,7 @@ def allowed_path(name):
     if (not isinstance(name, str) or '\\' in name or ':' in name or path.is_absolute()
             or any(part in ('', '.', '..') for part in name.split('/'))):
         return False
-    return name in FIXED or (len(path.parts) == 3 and path.parts[:2] == ('text_corpus', 'raw')
+    return name in FIXED or name in OPTIONAL or (len(path.parts) == 3 and path.parts[:2] == ('text_corpus', 'raw')
                              and not path.name.startswith('.') and path.suffix.lower() in ('.pdf', '.html', '.htm', '.txt'))
 
 
@@ -126,7 +130,29 @@ def validate_data(root, vector_cache=None):
             if values_digest.hexdigest() != index.manifest['embedding_values_sha256']:
                 raise HarnessError('Data bundle embedding values digest differs')
             result['embedding_values_sha256'] = index.manifest['embedding_values_sha256']
+        if (root / PARAGRAPH_PATH).is_file():
+            result['paragraph_vectors'] = _validate_paragraphs(root / PARAGRAPH_PATH, corpus, snapshot)
         return result
+
+
+def _validate_paragraphs(path, corpus, snapshot):
+    """Every stored paragraph must be exactly the splitter's span of a retrievable canonical chunk."""
+    from .paragraphs import MODEL, SPLITTER_VERSION, paragraph_rows
+    with closing(sqlite3.connect(f'{Path(path).resolve().as_uri()}?mode=ro', uri=True)) as con:
+        manifest = json.loads(con.execute('SELECT value FROM manifest').fetchone()[0])
+        stored = con.execute('SELECT chunk_id, start, end, length(data) FROM vectors ORDER BY rowid').fetchall()
+        digest = hashlib.sha256()
+        for (data,) in con.execute('SELECT data FROM vectors ORDER BY rowid'):
+            digest.update(data)
+    dims = manifest.get('dimensions')
+    expected = [(c, a, b) for c, a, b, _, _, _ in paragraph_rows(corpus)]
+    if (manifest.get('snapshot_sha256') != snapshot or manifest.get('embedding_model_id') != MODEL
+            or manifest.get('splitter') != SPLITTER_VERSION or type(dims) is not int
+            or manifest.get('vector_count') != len(stored) or digest.hexdigest() != manifest.get('content_sha256')
+            or [(c, a, b) for c, a, b, _ in stored] != expected or any(size != dims * 2 for _, _, _, size in stored)):
+        raise HarnessError('Data bundle paragraph vectors do not match the canonical corpus snapshot')
+    return {'vector_count': len(stored), 'dimensions': dims, 'content_sha256': manifest['content_sha256'],
+            'embedding_model_id': MODEL, 'splitter': SPLITTER_VERSION}
 
 
 def _distribution_vectors(source, destination, snapshot_sha256=None):
@@ -315,7 +341,7 @@ def export_bundle(root, destination):
     root, destination = Path(root).resolve(), Path(destination).resolve()
     if destination.exists():
         raise HarnessError('Bundle already exists; choose a new versioned output path')
-    paths = [root / name for name in FIXED]
+    paths = [root / name for name in FIXED] + [root / name for name in OPTIONAL if (root / name).is_file()]
     # Only originals referenced by the pinned graph are distributable. Unrelated
     # files dropped into raw/ (or obsolete downloads) are not silently included.
     with closing(sqlite3.connect(f'{(root / "artifacts/relationships.sqlite").as_uri()}?mode=ro', uri=True)) as graph:
@@ -352,6 +378,16 @@ def export_bundle(root, destination):
             public_vectors = public_root / VECTOR_PATH
             public_vectors.parent.mkdir(parents=True, exist_ok=True)
             _distribution_vectors(root / VECTOR_PATH, public_vectors, derivation.get('snapshot_sha256'))
+            public_paragraphs = public_root / PARAGRAPH_PATH
+            if public_paragraphs.is_file() and derivation.get('snapshot_sha256') != derivation.get('source_snapshot_sha256'):
+                # Redaction changes only unacquired sources' metadata, never chunk text or offsets; rebind the
+                # paragraph index to the public snapshot identity exactly as the chunk vectors are.
+                with closing(sqlite3.connect(public_paragraphs)) as con:
+                    value = json.loads(con.execute('SELECT value FROM manifest').fetchone()[0])
+                    value['snapshot_sha256'] = derivation['snapshot_sha256']
+                    con.execute('UPDATE manifest SET value=?', (json.dumps(value),))
+                    con.commit()
+                    con.execute('VACUUM')
             for record in records:
                 path = public_root / record['path']
                 record.update(bytes=path.stat().st_size, sha256=file_digest(path))

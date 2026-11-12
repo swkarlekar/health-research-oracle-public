@@ -5,17 +5,20 @@ and relationship map are distributed as a separate **GitHub Release asset**. The
 setup command downloads and installs the pinned asset; manual unzipping is not
 required.
 
-The current snapshot is `data-2026-11-11`, with asset
-`oracle-data-public-915db3bb0c7c.zip`. Its companion manifest and SHA-256 file describe
-every included file. `config/data-release.json` pins the archive hash for setup.
-The [recovery audit](source-recovery.md) reconciles the original resource PDF and
-client-supplied XLSX, including aliases, indexes and distribution exclusions.
+The current release is `data-2026-11-11-paragraphs`, with asset
+`oracle-data-public-915db3bb0c7c-paragraphs.zip`. It is the `data-2026-11-11` snapshot,
+byte for byte, plus the paragraph-vector index used by the research pipeline; an
+existing `data-2026-11-11` installation can install it in place. Its companion manifest
+and SHA-256 file describe every included file. `config/data-release.json` pins the
+archive hash for setup.
 
 The archive contains only:
 
 - Canonical SQLite corpus, document/section/chunk JSONL and processing summaries.
 - The 119 acquired originals referenced by this snapshot, including PDFs and HTML.
-- The local SQLite relationship map and Titan document-vector database.
+- The Titan document-vector database and the optional document map (a local SQLite file).
+- The paragraph-vector index (35,151 Titan V2 vectors, 512-dimensional float16), an
+  optional file that the installer checks against the same canonical snapshot.
 - The source registry and temporal policy that bind those data together.
 
 It excludes AWS credentials/profiles, spending grants, budgets, query-embedding

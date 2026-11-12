@@ -19,7 +19,8 @@ from .providers import LocalModel, discover_local, guard_local_model, server_url
 CATALOG = base.load_json(ROOT / 'config/bedrock-models.json')
 DEFAULT = {'provider': 'bedrock', 'bedrock_model': 'qwen.qwen3-32b-v1:0', 'local_model': '',
            'local_url': 'http://127.0.0.1:11434', 'aws_profile': 'oracle',
-           'context_tokens': 32768, 'local_size_acknowledged': False, 'authorization': None}
+           'context_tokens': 32768, 'local_size_acknowledged': False, 'use_answer_model': True,
+           'authorization': None}
 
 
 def check_aws(profile):
@@ -34,8 +35,10 @@ def check_aws(profile):
         models = session.client('bedrock', region_name='us-east-1', config=config).list_foundation_models(
             byOutputModality='TEXT', byInferenceType='ON_DEMAND')['modelSummaries']
         available = {m['modelId'] for m in models}
+        answer = CATALOG.get('answer_model')
         return {'account': identity['Account'], 'region': 'us-east-1',
                 'models': [m for m in CATALOG['models'] if m['id'] in available],
+                'answer_model': answer if answer and answer['id'] in available else None,
                 'note': 'Identity/catalog metadata only; no paid model call. Catalog presence does not verify model access.'}
     except Exception as exc:
         if isinstance(exc, HarnessError):
@@ -55,12 +58,14 @@ class ModelSettings:
         enabled = bool(auth and datetime.fromisoformat(auth['expires_at']) > datetime.now(timezone.utc))
         value['aws_enabled'] = enabled
         value['bedrock_models'] = CATALOG['models']
+        value['answer_model'] = CATALOG.get('answer_model')
         value['aws_region'] = 'us-east-1'
         summary = SpendLedger(self.ledger_path).summary()
         value['budget'] = {k: summary[k] for k in ('cap_usd', 'committed_upper_usd', 'remaining_usd')}
         if auth:
             value['authorization'] = {k: auth[k] for k in ('account', 'expires_at', 'allowance_usd')}
             value['authorization']['generation_model_id'] = auth.get('generation_model_id')
+            value['authorization']['answer_model_id'] = auth.get('answer_model_id')
         return value
 
     def save(self, payload):
@@ -79,7 +84,8 @@ class ModelSettings:
         value = {**DEFAULT, 'provider': provider, 'bedrock_model': model_id, 'aws_profile': profile,
                  'local_model': self.value['local_model'] if provider == 'bedrock' else payload.get('local_model', ''),
                  'local_url': self.value['local_url'] if provider == 'bedrock' else server_url(payload.get('local_url', DEFAULT['local_url'])),
-                 'context_tokens': context, 'local_size_acknowledged': payload.get('local_size_acknowledged') is True}
+                 'context_tokens': context, 'local_size_acknowledged': payload.get('local_size_acknowledged') is True,
+                 'use_answer_model': payload.get('use_answer_model', True) is not False}
         if provider != 'bedrock':
             self.check_local(value)
         if payload.get('authorize_aws') is True:
@@ -106,9 +112,16 @@ class ModelSettings:
             if authorization['generation_model_id']:
                 grants.append(('model', 'bedrock:Converse', {
                     'model_id': model_id, 'max_output_tokens': 4096, 'max_prompt_chars': 90000}))
+                # The optional answer-writing model is a separate, separately named grant inside the same
+                # allowance. It is created only when shown in Settings, enabled, and available to the account.
+                answer = identity.get('answer_model')
+                if value['use_answer_model'] and answer and answer['id'] != model_id:
+                    authorization['answer_model_id'] = answer['id']
+                    grants.append(('answer', 'bedrock:Converse', {
+                        'model_id': answer['id'], 'max_output_tokens': 4096, 'max_prompt_chars': 90000}))
             for name, action, resource in grants:
                 save(self.grant_path(identifier, name), {'user_approved': True, 'aws_account': identity['account'],
-                    'action': action, 'region': 'us-east-1', 'resource': resource, 'max_calls': 100, 'used_calls': 0,
+                    'action': action, 'region': 'us-east-1', 'resource': resource, 'max_calls': 5000, 'used_calls': 0,
                     'expires_at': expires, 'authorization': 'User explicitly enabled the displayed account/model and session allowance in Settings.'})
             ledger.use_stage('demo-' + identifier, allowance, isolated=True)
             value['authorization'] = authorization
@@ -136,7 +149,7 @@ class ModelSettings:
     def disable(self):
         auth = self.value.get('authorization')
         if auth:
-            for role in ('query', 'model'):
+            for role in ('query', 'model', 'answer'):
                 path = self.grant_path(auth['id'], role)
                 if not path.is_file():
                     continue
@@ -173,6 +186,19 @@ class ModelSettings:
             return BudgetedRuntime(session, ledger, price)
         return BedrockModel(model_id, 'us-east-1', ApprovalGate(self.grant_path(auth['id'], 'model')),
                             max_output_tokens=4096, max_prompt_chars=90000, client_factory=factory)
+
+    def answer_model(self):
+        """The separately approved answer-writing model, or None to let the selected model write the answer."""
+        value, entry = self.value, CATALOG.get('answer_model')
+        auth = value.get('authorization') or {}
+        if (value['provider'] != 'bedrock' or not value.get('use_answer_model', True) or not entry
+                or auth.get('answer_model_id') != entry['id'] or auth.get('generation_model_id') != value['bedrock_model']):
+            return None
+        auth, ledger = self.authorized()
+        session = AccountSession(value['aws_profile'], auth['account'])
+        return BedrockModel(entry['id'], 'us-east-1', ApprovalGate(self.grant_path(auth['id'], 'answer')),
+                            max_output_tokens=4096, max_prompt_chars=90000,
+                            client_factory=lambda service, region: BudgetedRuntime(session, ledger, entry))
 
 
 class BudgetedRuntime:

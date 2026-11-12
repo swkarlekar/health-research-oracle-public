@@ -15,13 +15,14 @@ aws sso login --profile oracle
 
 `oracle` is just a local profile nickname. The application region is `us-east-1`; the SSO region may differ. Boto3 uses the named profile and its local SSO cache. AWS CLI can refresh role credentials while the SSO session permits; after the SSO session expires, run the login command again. Do not copy credentials, cache files, or approval grants between collaborators.
 
-Your permission set needs `bedrock:ListFoundationModels` for the account/catalog check and `bedrock:InvokeModel` for Titan Text Embeddings V2 and whichever generation model you select. The demo invokes generation through Bedrock Converse. Restrict resource permissions to the selected regional foundation models where the action supports it. The current catalog is:
+Your permission set needs `bedrock:ListFoundationModels` for the account/catalog check and `bedrock:InvokeModel` for Titan Text Embeddings V2 and the generation models you use (the selected model and, if enabled, the answer-writing model). The demo invokes generation through Bedrock Converse. Restrict resource permissions to the selected regional foundation models where the action supports it. The current catalog is:
 
 | Model | Model ID |
 | --- | --- |
 | Qwen3 32B, default | `qwen.qwen3-32b-v1:0` |
 | Amazon Nova Lite | `amazon.nova-lite-v1:0` |
 | Amazon Nova Pro | `amazon.nova-pro-v1:0` |
+| Mistral Large 3, optional answer writer | `mistral.mistral-large-3-675b-instruct` |
 | Query embedding | `amazon.titan-embed-text-v2:0` |
 
 Catalog presence does not prove your account has model access. A restricted account without ListFoundationModels currently fails the metadata check. No S3, Lambda, vector-store, or Knowledge Base permissions are needed for the default local-retrieval demo. See the [Bedrock Converse API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html) and [SSO configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html).
@@ -36,73 +37,58 @@ python3 scripts/run_demo.py --port 8766
 
 | Component | Location and behavior |
 | --- | --- |
-| Original PDFs and saved source files | Local `text_corpus/raw/`; original hashes verified before viewing |
-| Canonical text, sections, chunks, and provenance | Local `text_corpus/processed/` and its corpus SQLite index |
-| Document embeddings | Local `artifacts/aws-eval/vector-cache.sqlite`; exported Titan V2, 1,024-dimensional vectors |
-| Query embeddings | Titan V2 on a cache miss; local `artifacts/query-embeddings.sqlite` caches exact query/model/settings matches |
-| Relationship map and review ledger | Local `artifacts/relationships.sqlite`; source-linked relations and reviewed interpretations |
-| Answer and skeptical review | Selected Bedrock model or selected loopback local model server |
-| Chat history, debug, and settings | Local `artifacts/ui/`; never included in the data release |
-| Grants, counters, and spend ledger | Local ignored artifacts; never committed or distributed |
+| Original PDFs and saved source files | Local `text_corpus/raw/`; hashes verified before viewing |
+| Canonical text, sections, and chunks | Local `text_corpus/processed/` and its SQLite index |
+| Chunk vectors | Local `artifacts/aws-eval/vector-cache.sqlite`; Titan V2, 1,024 dimensions |
+| Paragraph vectors | Local `artifacts/aws-eval/paragraph-vectors.sqlite`; Titan V2, 512 dimensions, float16 |
+| Keyword indexes | Chunk index in the corpus database; a stemmed paragraph index built in memory at start |
+| Query embeddings | Titan V2 on AWS for each new search text; cached in `artifacts/query-embeddings.sqlite` |
+| Optional document map | Local `artifacts/relationships.sqlite`; not used for Bedrock answers by default |
+| Planning, reading, answering, checking | The selected Bedrock model(s), or a local model server |
+| Chat history, debug reports, settings | Local `artifacts/ui/`; never part of the data release |
+| Grants and spending ledger | Local, ignored by Git; never distributed |
 
-The data release contains source documents, processed corpus, vectors, and graph. It excludes query caches, chat history, credentials, grants, model weights, and experiment outputs. See the [bundle contract and restore process](docs/data-bundle.md). The current archive is about 316 MB; the relationship database is about 71.7 MB and document-vector cache about 53.3 MB. The corpus SQLite database is about 57.4 MB. The [recovery audit](docs/source-recovery.md) records source coverage, mixed vector origins and remaining ranking gaps. These are distinct files, not separate copies of a hosted knowledge graph.
-
-Local vector search performs exhaustive cosine comparison over the same exported vectors and resolves every hit to canonical local text. The 15 saved AWS searches returned the same top-K chunk sets locally in all 15 cases, with ranking differences in three. This is measured parity for those questions, not a guarantee of identical future results. The same local graph and expansion harness follow either retrieval adapter. No re-embedding of documents is required for a new laptop or a generation-model change. Replacing Titan with another embedding model would require compatible document and query vectors and a new index plan.
+The data release contains the sources, processed corpus, both vector indexes, and the document map. It excludes query caches, chat history, credentials, grants, model weights, and experiment outputs. See the [bundle contract](docs/data-bundle.md). Searching is exhaustive cosine comparison on the laptop; numpy makes it fast and is installed by setup. If numpy or the paragraph-vector file is missing, search still works with chunk vectors and keywords, with weaker recall.
 
 ## Model settings and spending
 
-The settings page starts with Bedrock Qwen3 32B selected and paid calls disabled. **Check account and available models** uses STS and Bedrock catalog metadata, without paid inference. Explicit account-specific consent creates a four-hour grant and a shared query/generation session allowance. Query-only authorization for a local response model does not authorize later Bedrock generation.
+Settings starts with Bedrock Qwen3 32B selected and paid calls disabled. **Check account and available models** reads identity and catalog metadata without paid inference. Explicit, account-specific consent then creates a four-hour grant for query embeddings, one for the selected generation model, and, if its box is ticked and the account has access, one for the answer-writing model. All share one session allowance. Consent for a local answer model covers query embeddings only.
 
-The persisted ledger starts with a strict **$10 cumulative cap per installation**, alongside the chosen smaller session allowance. An explicitly authorized increase is audited without resetting any charges or stage limits; opening a ledger adopts its persisted cap. The current research workspace was separately authorized to increase its cumulative cap to $20 for a $10 optimization stage. Calls reserve a conservative upper cost before client creation; successful calls settle from reported token usage, while uncertain usage retains its reservation. Grant attempts are persisted and SDK retries are disabled. Repeated identical queries reuse cached embeddings. A normal research run has two query-only routing calls, one draft, and one source review (four calls). One additional corpus search and final review can bring the total to five. A boundary-only result uses two calls and no source search. All calls use the selected model and the same metering/grant controls. Source or model failures do not trigger an unapproved cloud fallback. **Disable paid AWS calls** expires the current grants; an already dispatched request cannot be undone.
+A Bedrock answer makes about 50 small calls (two request checks, one plan, about 40 parallel passage-screening calls, then triage, answer, a support check and a second reader) and up to about 25 query embeddings, for roughly $0.07 and one minute. The default $0.25 allowance therefore covers three or four questions; raise it in Settings as needed. Each grant allows up to 5,000 calls; the dollar allowance is what limits spending.
 
-These are application controls, not an AWS billing service or an account-wide cap. They cover this application's metered requests using saved regional prices, not unrelated tools, taxes, changed AWS prices, or another laptop. The original trial's ledger is preserved locally; it is not shipped to collaborators. Set an AWS budget independently if desired. Generation rates and the curated model menu are in `config/bedrock-models.json`; Titan embedding rates come from `config/aws-eval-prices.json`.
+A persistent ledger enforces a cumulative cap per installation ($10 unless explicitly raised). Each call reserves a conservative upper cost before it is sent and settles to the reported token usage afterwards. SDK retries are disabled. **Disable paid AWS calls** expires the current grants. These are application controls using saved regional prices, not an AWS billing limit; set an AWS budget separately if you want one. Generation prices and the model menu are in `config/bedrock-models.json`; the Titan price is in `config/aws-eval-prices.json`.
 
-For local generation, install and run Ollama, LM Studio, or another compatible server yourself. Settings discovers model metadata without loading or downloading weights. Only loopback URLs are accepted. Known models exceeding 35% of physical RAM are blocked (8 GiB fallback when RAM cannot be determined); unknown size requires explicit acknowledgment. macOS memory-pressure checks, conservative context limits, a 2,048-token output cap, and Ollama `keep_alive=0` reduce risk but do not guarantee peak memory use. The earlier large local Qwen evaluation exhausted this laptop's memory and was stopped; it must not resume automatically.
+For local generation, install and run Ollama, LM Studio, or another compatible server yourself. Settings discovers installed models without loading them, accepts only loopback URLs, and blocks models too large for the machine's memory. Local models use the simpler single-search loop described below, because they cannot make fifty calls quickly.
 
-## Harness and document map
+## Harness
 
-The [original diagram](mermaid-diagram.png) maps to:
+[How the harness works](docs/harness.md) is the reference. In brief:
 
-1. Input and scope checks in `oracle/policy.py`; missing research attributes yield clarification. The UI infers plan type from the question. **Rules as of** sets the research date for historical applicability, not the ingestion date or proof of currency. Blank means unspecified; follow-ups retain an explicitly selected date until cleared.
-2. Two query-only structured request checks in `oracle/request_routing.py`, before source retrieval. Prohibited-only requests receive fixed capability limits or enum-derived clarification questions. Mixed requests continue to public-rule research with fixed limits attached only after the original answer gates pass. These checks add no legal authority.
-3. Approved-source retrieval in `oracle/local_vectors.py` or the optional managed adapter in `oracle/aws.py`.
-4. Bounded parent/section context expansion and one-hop relationship traversal in `oracle/context.py`. Short sources can be included whole; long sources load relevant context with explicit omissions.
-5. Drafting, skeptical LLM review, and at most one additional search in `oracle/harness.py`. The reviewer checks support, applicability, responsiveness, exceptions, dates, and conflicts. There is no corpus-wide currency certification.
-6. Passage selection and exact canonical quotation resolution in `oracle/quotations.py`, followed by schema, citation, scope, source-integrity, and boundary checks. Invalid output is withheld.
-7. Concise responses and separate debug traces in `oracle/output.py`; PDF viewing and text highlights in `oracle/viewer.py` and `oracle/web.py`.
+- `oracle/policy.py` checks the question and scope before anything else; `oracle/request_routing.py` makes two query-only calls that separate public-rule research from requests the tool must decline.
+- `oracle/pipeline.py` runs plan → search → read → triage → answer → check and second reader. Its instructions are in `oracle/pipeline_prompts.py` and its settings in `config/research-pipeline.json`.
+- `oracle/paragraphs.py` provides the paragraph keyword and vector indexes; `oracle/local_vectors.py` the chunk vectors and query-embedding cache.
+- `oracle/harness.py` validates the result: exact quotations, citations, unchanged scope, and the research-only boundary. Invalid output is withheld.
+- `oracle/output.py`, `oracle/viewer.py`, and `oracle/web.py` produce the answer view, the debug report, and the document viewer.
 
-The map's four stages are extract, interpret, validate, and review. Programmatic extraction records explicit references, identities, relationship language, ambiguous matches, and missing targets. Bounded model interpretation can propose typed relationships with canonical supporting spans. Python validates snapshot identity, endpoints, quotes, and date evidence. A separate review records model-reviewed, unresolved, or rejected interpretations in an append-only ledger. Model review is never human verification. Metadata dates do not prove supersession; a reference to another document is not proof that it amends that document.
-
-Live requests use [these prompt layers](docs/prompts.md). The [client-priority work](docs/client-priority-optimization.md) adds hybrid vector/keyword retrieval and a wording correction to the existing two-call guard. Its frozen guard-only check allowed all seven client formulations, stopped all five boundary-only requests, and preserved a mixed research/private-access request with limits. It did not test full answer correctness. The broader planner, context changes and source-answer pipeline remain experimental; production drafting/review prompts and context limits are unchanged. Neither current nor experimental pipelines have met the brief's 95% correctness/completeness target. The guard was tested on Bedrock Qwen; local-model behavior is not equivalently validated.
+Local models, keyword-only mode, and the CLI use the original loop in `oracle/harness.py`: one search, bounded context expansion (`oracle/context.py`), a draft, and a skeptical review with at most one additional search. That loop can use the optional document map (`oracle/relationships.py`), which records references between documents and reviewed interpretations of them. Following the map's references is available in the research pipeline as a setting (`limits.reference_cap`) and is off by default.
 
 ## Developer commands
-
-The lightweight demo does not need the full extraction/development dependencies. To work on tests or regenerate corpus artifacts:
 
 ```sh
 .venv/bin/python -m pip install -r requirements-dev.txt
 make test
 
-# API-shaped mocked responses; no credentials, sockets, or actual inference.
+# API-shaped mocked responses; no credentials, sockets, or inference.
 make api-check
 
-# Inspect real cached vector retrieval without generation.
+# Inspect cached vector retrieval without generation (original loop).
 .venv/bin/python -m oracle ask --case 1 --retriever local-vector --evidence-only \
   --view debug --output artifacts/evidence.debug.json
 
-.venv/bin/python -m oracle graph-status
+# Rebuild the paragraph-vector index after a corpus change (about $0.10 of embeddings).
+.venv/bin/python scripts/build_paragraph_index.py --profile oracle --approve-spend 0.25
 ```
 
-The evidence-only command needs a previously cached query embedding; distributed bundles intentionally omit personal query caches. An uncached query stops without a matching explicit grant. Historical keyword/mock tools remain developer checks, not an alternative chatbot mode. CLI trial workflows are documented in [the developer runbook](docs/demo.md) and [AWS trial record](docs/aws-trial.md); those commands do not inherit UI consent.
+CLI commands do not inherit consent given in the app. A corpus change needs new canonical identities, embeddings for the changed chunks, a rebuilt paragraph index, and a new pinned data release; a model change needs none of that. Commit code, config, and docs in Git; publish data snapshots as versioned release assets. Do not commit `artifacts/`, source PDFs, credentials, or local settings.
 
-Rebuilding a graph requires a new output path so existing review decisions are preserved. Corpus changes require new canonical identities, embeddings for changed documents, graph reconciliation, and a new pinned data Release. A model change does not rebuild the corpus. Commit code/config/docs in Git; publish large approved data snapshots as versioned Release assets. Do not commit `artifacts/`, source PDFs, credentials, or local settings.
-
-The TRACE pencil-and-heart logo is stored in `oracle/web_assets/trace-logo.svg`.
-
-The CSSNY logo is the unchanged [official website SVG](https://smhttp-ssl-58547.nexcesscdn.net/nycss/images/CSS_Logo-Primary_RGB.svg), saved locally as `oracle/web_assets/cssny-logo.svg`; the header links to [CSSNY](https://www.cssny.org/). No external image request is needed to load the page.
-
-## Advocate-case optimization record
-
-The [final report](docs/advocate-optimization.md) and [independent review](docs/advocate-independent-review.md) document the experimental prompt/retrieval candidate. It was not promoted after substantive source-selection and applicability failures. The default architecture and prompts described above remain in use. Candidate code and prompt documentation are available on the linked experimental branch.
-
-The [thinking-mode comparison](docs/reasoning-comparison.md) records explicit Bedrock Qwen high reasoning plus Haiku, Grok, Llama and GPT-OSS access/structured-output trials. These adapter changes remain experimental and do not enable paid calls or change the default demo.
+The TRACE logo is `oracle/web_assets/trace-logo.svg`. The CSSNY logo is the unchanged [official website SVG](https://smhttp-ssl-58547.nexcesscdn.net/nycss/images/CSS_Logo-Primary_RGB.svg), saved as `oracle/web_assets/cssny-logo.svg`; the header links to [CSSNY](https://www.cssny.org/).

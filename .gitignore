@@ -30,3 +30,15 @@ docs/screenshots/*.mov
 
 # Client source inventory is local reference material, not a release asset.
 docs/medicaid_sources_of_authority.xlsx
+
+# docs/ holds method documentation only. Experiment records, audits, and intermediate
+# results stay on the maintainer's computer.
+docs/*
+!docs/harness.md
+!docs/prompts.md
+!docs/data-bundle.md
+!docs/local-interface.md
+!docs/screenshots/
+
+# The original design-brief diagram image; the current flow is drawn in README.md and docs/harness.md.
+mermaid-diagram.png

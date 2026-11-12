@@ -201,6 +201,10 @@ class TitanQueryEmbedder:
         return vector_values(data.get('embedding'))
 
 
+# Models exercised here with Bedrock's native JSON-schema decoding. Others rely on the prompt-embedded schema.
+NATIVE_JSON_SCHEMA_MODELS = frozenset({'qwen.qwen3-32b-v1:0', 'mistral.mistral-large-3-675b-instruct'})
+
+
 class BedrockModel:
     def __init__(self, model_id, region, gate: ApprovalGate, max_output_tokens=2400, max_prompt_chars=110000, client_factory=None):
         if not isinstance(model_id, str) or not model_id.strip() or not isinstance(region, str) or not region.strip():
@@ -227,7 +231,7 @@ class BedrockModel:
         output_config = None
         if self.model_id.startswith('qwen.'):
             text += '\n/no_think'
-        if self.model_id == 'qwen.qwen3-32b-v1:0':
+        if self.model_id in NATIVE_JSON_SCHEMA_MODELS:
             output_config = {'textFormat': {'type': 'json_schema', 'structure': {'jsonSchema': {
                 'name': 'oracle_response', 'schema': base.canonical(_native_schema(schema))}}}}
         native_chars = len(base.canonical(output_config)) if output_config else 0

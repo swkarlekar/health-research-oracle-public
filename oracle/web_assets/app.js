@@ -1,6 +1,6 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const state = {config:null, threadKey:null, thread:null, runs:[], busy:false, viewer:null, viewerSerial:0, navigation:0, observers:[], dateEdited:false, settings:null, localModels:[], checkedAccount:null};
+const state = {config:null, threadKey:null, thread:null, runs:[], busy:false, viewer:null, viewerSerial:0, navigation:0, observers:[],  settings:null, localModels:[], checkedAccount:null};
 function rememberThread(identity) {
   if(!state.threadKey)return;
   if(identity)localStorage.setItem(state.threadKey,identity);
@@ -48,6 +48,11 @@ function cite(ref,run) {
 const statusNames={supported:'Research result',partial:'Partial answer',currency_unverified:'Date unverified',conflicting_sources:'Sources differ',clarification_needed:'More information needed',not_found:'No suitable answer found',failed:'No accepted answer'};
 function progressLabel(progress) {
   if(progress?.includes('request_classification')||progress?.includes('public_research_check'))return 'Checking the research request…';
+  if(/model_started:plan/.test(progress||''))return 'Planning the search…';
+  if(progress==='research_search'||/model_started:read/.test(progress||'')||progress==='research_read')return 'Reading candidate passages…';
+  if(/model_started:triage/.test(progress||''))return 'Choosing the key passages…';
+  if(/model_started:answer/.test(progress||''))return 'Writing the answer…';
+  if(/model_started:(?:verify|doubts)/.test(progress||''))return 'Checking each finding against its source…';
   if(/model_started:.*review/.test(progress||''))return 'Checking support, dates, and exceptions…';
   if(/model_started:.*(?:draft|selection)/.test(progress||''))return 'Reading the retrieved sources…';
   if(progress==='additional_retrieval_and_expansion')return 'Looking for additional source material…';
@@ -120,13 +125,11 @@ async function openThread(identity) {
 }
 function newResearch() {
   state.navigation++;state.thread=null;state.runs=[];rememberThread(null);renderMessages();history();
-  state.dateEdited=false;$('question').value='';$('research-date').value='';$('program').value='New York Medicaid';$('scope-toggle').firstChild.textContent='New York Medicaid ';$('use-history').checked=true;$('question').focus();document.querySelector('.workspace').classList.remove('show-history');
+  $('question').value='';$('program').value='New York Medicaid';$('scope-toggle').firstChild.textContent='New York Medicaid ';$('use-history').checked=true;$('question').focus();document.querySelector('.workspace').classList.remove('show-history');
 }
 function fillScope(scope) {
   if(!scope)return;
   $('program').value=scope.program||'';
-  $('research-date').value=scope.research_date==='unknown'?'':scope.research_date||'';
-  state.dateEdited=false;
 }
 function busy(value) {state.busy=value;$('send').disabled=value || !state.config;}
 function upsert(run) {
@@ -154,8 +157,7 @@ async function submit(event) {
   busy(true);
   try {
     const scope={program:$('program').value.trim()||null};
-    if($('research-date').value || state.dateEdited)scope.research_date=$('research-date').value||'unknown';
-    const run=await api('/api/ask',{question,thread_id:state.thread,use_history:$('use-history').checked,scope,clear_research_date:state.dateEdited&&!$('research-date').value});
+    const run=await api('/api/ask',{question,thread_id:state.thread,use_history:$('use-history').checked,scope});
     if(state.thread!==run.thread_id){state.thread=run.thread_id;state.runs=[];rememberThread(run.thread_id);}
     fillScope(run.scope);upsert(run);$('question').value='';await history();
     $('chat-scroll').scrollTo({top:$('chat-scroll').scrollHeight,behavior:'smooth'});
@@ -167,7 +169,7 @@ function selectCase(number) {
   const sample=state.config.scenarios.find(c=>c.id===Number(number));if(!sample)return;
   if(state.runs.length)newResearch();
   $('question').value=sample.question;$('program').value=sample.scope.program;
-  $('research-date').value='';$('question').focus();
+  $('question').focus();
 }
 function savedAwsCase() {
   const selected=Number($('examples').value)||1;
@@ -206,7 +208,7 @@ function providerFields() {
 }
 function accountStatus(settings) {
   const auth=settings.authorization;
-  const approved=auth?.generation_model_id?`Titan query embeddings and ${auth.generation_model_id}`:'Titan query embeddings only';
+  const approved=auth?.generation_model_id?`Titan query embeddings, ${auth.generation_model_id}${auth.answer_model_id?' and '+auth.answer_model_id+' (answer writing)':''}`:'Titan query embeddings only';
   $('settings-account').textContent=auth?`Account ${auth.account} · ${settings.aws_enabled?'enabled':'expired'} · allowance $${auth.allowance_usd}\nApproved: ${approved}\nExpires ${new Date(auth.expires_at).toLocaleString()}`:'Check your local AWS SSO profile before enabling paid calls. No access keys are entered here.';
   $('settings-budget').textContent=`This computer: $${settings.budget.committed_upper_usd.toFixed(3)} committed including conservative reservations, of a $${settings.budget.cap_usd.toFixed(2)} total cap. This is not an AWS invoice.`;
 }
@@ -217,6 +219,9 @@ async function openSettings() {
     $('settings-provider').value=value.provider;$('settings-local-url').value=value.local_url;
     $('settings-profile').value=value.aws_profile;$('settings-context').value=String(value.context_tokens);
     $('settings-local-ack').checked=value.local_size_acknowledged;$('settings-authorize').checked=false;$('save-settings').textContent='Save settings';
+    $('settings-answer-model').checked=value.use_answer_model!==false;
+    const writer=value.answer_model;$('settings-answer-model').closest('label').hidden=!writer;
+    if(writer)$('settings-answer-model-label').textContent=`Write the final answer with ${writer.name} ($${writer.input_per_million} input / $${writer.output_per_million} output per million tokens; about one cent more per question). The model above still plans the search and screens passages. Changing this needs a new authorization.`;
     $('settings-bedrock-model').replaceChildren(...value.bedrock_models.map(m=>el('option',{value:m.id},m.name)));
     $('settings-bedrock-model').value=value.bedrock_model;
     $('settings-local-model').replaceChildren(el('option',{value:value.local_model||''},value.local_model||'Find models to choose one…'));
@@ -258,6 +263,7 @@ async function saveSettings(event) {
     const value=await api('/api/settings',{provider:$('settings-provider').value,bedrock_model:$('settings-bedrock-model').value,
       local_model:$('settings-local-model').value,local_url:$('settings-provider').value==='bedrock'?state.settings.local_url:$('settings-local-url').value.trim(),
       context_tokens:Number($('settings-context').value),local_size_acknowledged:$('settings-local-ack').checked,
+      use_answer_model:$('settings-answer-model').checked,
       aws_profile:$('settings-profile').value.trim(),authorize_aws:$('settings-authorize').checked,
       confirmed_account:state.checkedAccount,allowance_usd:$('settings-allowance').value});
     applySettings(value);$('settings-dialog').close();message('Settings saved. Future answers will use '+modelLabel(value)+'.');
@@ -394,7 +400,6 @@ $('mobile-menu').addEventListener('click',()=>document.querySelector('.workspace
 $('scope-toggle').addEventListener('click',()=>{$('scope-panel').hidden=!$('scope-panel').hidden;$('scope-toggle').setAttribute('aria-expanded',String(!$('scope-panel').hidden));});
 $('program').addEventListener('input',()=>{$('scope-toggle').firstChild.textContent=$('program').value||'Research scope';});
 $('examples').addEventListener('change',event=>selectCase(event.target.value));
-$('research-date').addEventListener('input',()=>{state.dateEdited=true;});
 $('saved-example').addEventListener('click',savedExample);
 $('close-debug').addEventListener('click',()=>$('debug-dialog').close());
 $('close-source').addEventListener('click',()=>$('source-dialog').close());

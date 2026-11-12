@@ -1,8 +1,7 @@
 """Query-only boundary classification and fixed research capability limits.
 
 Two structured calls use the selected, metered model. Substantive source research
-and quotation validation remain in Harness. See docs/prompt-search.md for the
-frozen experiment and post-validation wording limitations.
+and quotation validation remain in Harness.
 """
 from copy import deepcopy
 

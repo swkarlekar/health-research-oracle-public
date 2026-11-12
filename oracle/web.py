@@ -54,7 +54,8 @@ class ProgressTrace(DebugTrace):
 
 class LocalApp:
     def __init__(self, db, registry, graph, history, *, context_chars=16000, model_factory=None,
-                 retriever='local', vector_cache=VECTOR_CACHE, query_cache=QUERY_CACHE, budget_path=None):
+                 retriever='local', vector_cache=VECTOR_CACHE, query_cache=QUERY_CACHE, budget_path=None,
+                 pipeline='research'):
         self.db, self.registry, self.graph = Path(db), Path(registry), Path(graph)
         self.history = Path(history)
         self.history_namespace = base.digest(str(self.history.resolve()))
@@ -62,6 +63,9 @@ class LocalApp:
         if not 16000 <= context_chars <= 80000:
             raise HarnessError('UI context budget must be between 16000 and 80000 characters')
         self.context_chars = context_chars
+        if pipeline not in ('research', 'legacy'):
+            raise HarnessError('Unknown answer pipeline')
+        self.pipeline = pipeline
         self.models = ModelSettings(self.history.parent / 'settings.json', query_cache, budget_path)
         self.custom_model_factory = model_factory is not None
         self.model_factory = model_factory or self.models.model
@@ -229,11 +233,6 @@ class LocalApp:
                     previous_scope = json.loads(previous['scope_json'])
         if len(effective) > 1600:
             raise HarnessError('This conversation exceeds the research context limit. Start a new research question or turn off previous-question context.')
-        if type(payload.get('clear_research_date', False)) is not bool:
-            raise HarnessError('Invalid research date reset')
-        if (previous_scope.get('research_date') not in (None, 'unknown')
-                and supplied_scope.get('research_date') == 'unknown' and not payload.get('clear_research_date')):
-            supplied_scope = {k: v for k, v in supplied_scope.items() if k != 'research_date'}
         inferred = inferred_scope(effective)
         scope = {**inferred, **previous_scope,
                  **{k: v for k, v in inferred.items() if v is not None and k != 'research_date'},
@@ -241,6 +240,8 @@ class LocalApp:
         # An unspecified plan does not block general public-rule research. The
         # model can ask a focused question when that distinction is material.
         scope['plan_type'] = scope.get('plan_type') or 'unknown'
+        # The response contract carries a research date; the app does not use one.
+        scope['research_date'] = 'unknown'
         check_input(effective, scope)
         clarification = clarification_result(effective, scope)
         if clarification is not None:
@@ -267,8 +268,15 @@ class LocalApp:
         trace = ProgressTrace(progress)
         try:
             with self.corpus() as corpus:
-                result = Harness(corpus, self.model_factory(), limit=3, trace=trace,
-                                 request_guard=not self.custom_model_factory).run(question, scope)
+                # The research pipeline makes ~40 small calls, several in parallel; small local models keep
+                # the original single-search loop.
+                research = (self.retriever == 'local-vector'
+                            and (self.custom_model_factory or self.models.value['provider'] == 'bedrock'))
+                research = research and self.pipeline == 'research'
+                writer = self.models.answer_model() if research and not self.custom_model_factory else None
+                result = Harness(corpus, self.model_factory(), limit=3, trace=trace, reviewer=writer,
+                                 request_guard=not self.custom_model_factory,
+                                 pipeline='research' if research else None).run(question, scope)
             self.finish(identity, result, trace.report(result))
         except Exception as exc:
             error = str(exc) if isinstance(exc, (HarnessError, OSError)) else 'Research run failed; no answer was accepted'

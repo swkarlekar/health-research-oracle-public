@@ -291,6 +291,39 @@ class ModelSettingsTests(unittest.TestCase):
         with self.assertRaisesRegex(HarnessError, 'explicitly enable paid calls'):
             self.settings.model()
 
+    def authorize_with_writer(self, **changes):
+        payload = {**DEFAULT, 'authorize_aws': True, 'confirmed_account': ACCOUNT, 'allowance_usd': '.01', **changes}
+        identity = {'account': ACCOUNT, 'models': CATALOG['models'], 'answer_model': CATALOG['answer_model']}
+        with patch('oracle.model_settings.check_aws', return_value=identity):
+            return self.settings.save(payload)
+
+    def test_answer_model_needs_its_own_named_grant_inside_the_same_consent(self):
+        self.authorize()                      # account check did not list the answer model
+        self.assertIsNone(self.settings.answer_model())
+        self.assertFalse(self.settings.grant_path(self.settings.value['authorization']['id'], 'answer').exists())
+        public = self.authorize_with_writer()
+        auth = self.settings.value['authorization']
+        self.assertEqual(public['authorization']['answer_model_id'], CATALOG['answer_model']['id'])
+        grant = json.loads(self.settings.grant_path(auth['id'], 'answer').read_text())
+        self.assertEqual(grant['resource']['model_id'], CATALOG['answer_model']['id'])
+        with patch('oracle.model_settings.AccountSession'):
+            self.assertEqual(self.settings.answer_model().model_id, CATALOG['answer_model']['id'])
+        self.settings.disable()
+        grant = json.loads(self.settings.grant_path(auth['id'], 'answer').read_text())
+        self.assertLessEqual(datetime.fromisoformat(grant['expires_at']), datetime.now(timezone.utc))
+
+    def test_answer_model_is_not_granted_when_unticked_or_for_local_generation(self):
+        self.authorize_with_writer(use_answer_model=False)
+        auth = self.settings.value['authorization']
+        self.assertNotIn('answer_model_id', auth)
+        self.assertFalse(self.settings.grant_path(auth['id'], 'answer').exists())
+        self.assertIsNone(self.settings.answer_model())
+        a, b, c = self.local_patches()
+        with a, b, c:
+            self.authorize_with_writer(provider='ollama', local_model='gemma3:4b')
+        self.assertFalse(self.settings.grant_path(self.settings.value['authorization']['id'], 'answer').exists())
+        self.assertIsNone(self.settings.answer_model())
+
     def test_legacy_unbound_grant_cannot_authorize_bedrock_generation(self):
         self.authorize()
         self.settings.value['authorization'].pop('generation_model_id')

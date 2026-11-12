@@ -73,19 +73,12 @@ class WebTests(Fixture):
         self.assertEqual(order, ['save', 'disable'])
         self.assertIsNone(app.models.value['authorization'])
 
-    def test_ui_shaped_followup_preserves_date_unless_explicitly_cleared(self):
+    def test_a_supplied_research_date_is_never_used(self):
         app = self.app()
-        first = app.submit({'question': 'Synthetic alpha', 'scope': {**SCOPE, 'research_date': '2024-01-01'}})
-        self.done(app, first['id'])
-        payload = {'question': 'What about its exceptions?', 'thread_id': first['thread_id'],
-                   'scope': {**SCOPE, 'research_date': 'unknown'}}
-        follow = app.submit(payload)
-        self.done(app, follow['id'])
-        self.assertEqual(follow['scope']['research_date'], '2024-01-01')
-        payload.update(question='Use an unspecified research date.', clear_research_date=True)
-        cleared = app.submit(payload)
-        self.done(app, cleared['id'])
-        self.assertEqual(cleared['scope']['research_date'], 'unknown')
+        run = app.submit({'question': 'Synthetic alpha', 'scope': {**SCOPE, 'research_date': '2024-01-01'}})
+        self.done(app, run['id'])
+        self.assertEqual(run['scope']['research_date'], 'unknown')
+
     def test_saved_bedrock_report_is_imported_offline_and_revalidates_quotations(self):
         app = self.app()
         run = app.submit({'question': 'Synthetic alpha', 'scope': SCOPE})
@@ -172,7 +165,7 @@ class WebTests(Fixture):
         self.assertEqual(run['answer']['status'], 'clarification_needed')
         self.assertFalse(app.report(run['id'])['result']['model_invoked'])
 
-    def test_followup_uses_only_user_context_and_preserves_governing_date(self):
+    def test_followup_uses_only_user_context(self):
         app = self.app()
         scope = dict(SCOPE, research_date='2024-01-01')
         first = app.submit({'question': 'Synthetic alpha', 'scope': scope})
@@ -183,7 +176,6 @@ class WebTests(Fixture):
         self.assertIn('Synthetic alpha', row['effective_question'])
         self.assertIn('Latest user message', row['effective_question'])
         self.assertNotIn('The synthetic source contains', row['effective_question'])
-        self.assertEqual(json.loads(row['scope_json'])['research_date'], '2024-01-01')
         self.assertTrue(app.public(row)['uses_history'])
 
     def test_standalone_message_does_not_silently_inherit_context(self):

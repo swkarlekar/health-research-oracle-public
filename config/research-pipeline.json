@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "purpose": "Editable settings for the research pipeline. Vocabulary and document routing only; nothing here is evidence or a legal rule.",
+  "glossary": "ADL = activities of daily living; CBLTSS = community based long term services and supports; CDPAP/CDPAS = consumer directed personal assistance program/services; CHA = community health assessment; DME = durable medical equipment; FAD/IAD = final/initial adverse determination; FFS = fee-for-service; HARP = health and recovery plan; LDSS = local department of social services (social services district); MAP = Medicaid Advantage Plus; MLTC/MLTCP = managed long term care (plan); MMC = mainstream Medicaid managed care; MRG = Medicaid Reference Guide; NH/SNF = nursing home / skilled nursing facility / residential health care facility / nursing facility; NYIAP = New York Independent Assessor Program (the independent assessor); OON = out of network; PACE = Program of All-inclusive Care for the Elderly; PCS = personal care services; PDN = private duty nursing; TPHI/TPL = third party health insurance / third party liability (other health coverage an enrollee has, which can include Medicare); UAS-NY = Uniform Assessment System for New York (the assessment tool; a 'UAS-NY assessment' is the community health assessment / nursing assessment of the individual); dual eligible = has both Medicare and Medicaid.",
+  "core_documents": {
+    "_comment": "Title substrings of documents that are always searched for a plan category, in addition to whatever the planner picks. A researcher always checks the governing contract, the federal managed care rules and the State plan statute.",
+    "*": [
+      "42 C.F.R. Ch. IV, Sub. C, Pt. 438",
+      "42 U.S.C. § 1396a",
+      "N.Y. Social Services Law § 364-j",
+      "365-a"
+    ],
+    "MLTC": [
+      "MLTC Partial Capitation Model Contract",
+      "Public Health Law § 4403-f",
+      "18 NYCRR § 505.14",
+      "10 NYCRR § 98-1.13",
+      "MLTC Policy 16.06",
+      "MLTC Policy 16.07",
+      "MLTC Policy 17.02",
+      "MLTC Policy 25.04",
+      "MLTC Policy 26.01"
+    ],
+    "HARP": [
+      "Mainstream MMC / HIV SNP / HARP model contract"
+    ],
+    "MANAGED CARE (TYPE UNSPECIFIED)": [
+      "Mainstream MMC / HIV SNP / HARP model contract",
+      "MLTC Partial Capitation Model Contract",
+      "10 NYCRR § 98-1.13"
+    ],
+    "CDPAP": [
+      "18 NYCRR § 505.28",
+      "18 NYCRR § 505.14",
+      "MLTC Partial Capitation Model Contract",
+      "Sample administrative agreement"
+    ],
+    "NOT PLAN SPECIFIC": [
+      "Medicaid Reference Guide (MRG)",
+      "1396d(a)"
+    ],
+    "UNKNOWN": [
+      "MLTC Partial Capitation Model Contract",
+      "Mainstream MMC / HIV SNP / HARP model contract",
+      "18 NYCRR § 505.14",
+      "Medicaid Reference Guide (MRG)"
+    ]
+  },
+  "authority_rules": [
+    [
+      "Pt\\. 422|Pt\\. 423|1395w-28",
+      "Federal Medicare regulation/statute (Medicare Advantage / Part D)",
+      "MEDICARE"
+    ],
+    [
+      "1395eee|1396u-4|PACE Model Contract",
+      "PACE authority",
+      "PACE"
+    ],
+    [
+      "MLTC Partial Capitation Model Contract",
+      "Model contract: MLTC partial capitation",
+      "MLTC"
+    ],
+    [
+      "Medicaid Advantage Plus",
+      "Model contract: Medicaid Advantage Plus (MAP)",
+      "MAP"
+    ],
+    [
+      "Mainstream MMC",
+      "Model contract: mainstream Medicaid managed care / HIV SNP / HARP",
+      "MAINSTREAM"
+    ],
+    [
+      "MLTC Policy",
+      "NY Department of Health MLTC policy guidance",
+      "MLTC"
+    ],
+    [
+      "4403-f|98-1\\.19",
+      "New York statute/regulation on managed long term care plans",
+      "MLTC"
+    ],
+    [
+      "4403-c",
+      "New York statute (HIV special needs plans)",
+      "MAINSTREAM"
+    ],
+    [
+      "45 C\\.F\\.R",
+      "Federal privacy regulation (HIPAA)",
+      null
+    ],
+    [
+      "C\\.F\\.R|^§ ?4",
+      "Federal Medicaid regulation",
+      null
+    ],
+    [
+      "U\\.S\\.C",
+      "Federal Medicaid statute",
+      null
+    ],
+    [
+      "NYCRR",
+      "New York regulation",
+      null
+    ],
+    [
+      "N\\.Y\\.|Social Services Law|Public Health Law",
+      "New York statute",
+      null
+    ],
+    [
+      "Medicaid Reference Guide",
+      "NY Medicaid Reference Guide (eligibility manual)",
+      null
+    ],
+    [
+      "1115 Waiver",
+      "Federal 1115 waiver terms (NY Medicaid Redesign Team)",
+      null
+    ],
+    [
+      "Adverse Determination|IAD|FAD|Notice",
+      "Model notice template",
+      null
+    ]
+  ],
+  "in_scope_families": {
+    "MLTC": [
+      "MLTC"
+    ],
+    "HARP": [
+      "MAINSTREAM"
+    ],
+    "CDPAP": [
+      "MLTC",
+      "MAINSTREAM",
+      "MAP",
+      "PACE"
+    ]
+  },
+  "authority_order": [
+    "Model contract",
+    "NY Department of Health",
+    "New York regulation",
+    "New York statute",
+    "Federal Medicaid regulation",
+    "Federal Medicaid statute",
+    "Federal 1115",
+    "NY Medicaid Reference",
+    "Model notice",
+    "Other",
+    "Federal privacy",
+    "PACE",
+    "Federal Medicare"
+  ],
+  "limits": {
+    "lane_depth": 30,
+    "pool_size": 120,
+    "double_read_head": 60,
+    "neighbor_span": 2,
+    "neighbor_cap": 36,
+    "read_batch_chars": 16000,
+    "read_batch_chunks": 6,
+    "read_workers": 6,
+    "evidence_chars": 120000,
+    "key_passages": 20,
+    "max_quotes": 26,
+    "reference_cap": 0,
+    "triage_batch_chars": 36000
+  },
+  "lane_weights": {
+    "paragraph_vector_core": 2.0,
+    "paragraph_vector": 1.0,
+    "chunk_vector": 1.0,
+    "chunk_keyword": 0.5,
+    "paragraph_keyword": 0.5,
+    "phrase": 0.5
+  },
+  "rank_constant": 2,
+  "off_scope_weight": 0.4
+}

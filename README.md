@@ -4,17 +4,17 @@
 
 <img src="oracle/web_assets/trace-logo.svg" width="80" alt="TRACE logo, a pencil tracing a heart">
 
-**[▶ Watch the demo video](https://github.com/swkarlekar/health-research-oracle-public/releases/download/demo-video-2026-11-08/design_sprint_demo_video.mov)** (MOV download, 119 MiB)
+**[▶ Watch the demo video](https://github.com/swkarlekar/health-research-oracle-public/releases/download/demo-video-2026-11-08/design_sprint_demo_video.mov)** (MOV download, 119 MiB; recorded on an earlier version)
 
-A research assistant for public health insurance advocates, based on the Community Service Society of New York (CSSNY) design brief. Ask a question in plain language, inspect the supporting quotations, and open cited documents inside the chat interface with highlighted passages. The advocate remains responsible for interpreting the rules and applying them to a client's situation.
+A research assistant for public health insurance advocates, based on the Community Service Society of New York (CSSNY) design brief. Ask a question in plain language, read the answer with its supporting quotations, see what the sources leave uncertain, and open any cited document inside the chat with the passage highlighted. The advocate remains responsible for interpreting the rules and applying them to a client's situation.
 
 ![Earlier demo welcome page with an example research question and CSSNY header](docs/screenshots/IMG_8305.png)
 
-The broader design covers public health insurance. **This prototype focuses on New York Medicaid**, especially managed care, long-term care, and non-MAGI eligibility. The supplied resources also include Medicare, integrated Medicare–Medicaid care, and health information privacy; their presence does not establish complete coverage of those topics.
+**This prototype focuses on New York Medicaid**, especially managed long term care, managed care, and non-MAGI eligibility. The collection also holds some Medicare, integrated Medicare–Medicaid, and health-privacy sources; their presence does not mean those topics are fully covered.
 
 ## Start the demo
 
-You need Python 3.12+, Git, AWS CLI v2, Make, Google Chrome, and an AWS SSO profile with Bedrock permissions. No GPU is required for the default cloud model. See [first-time AWS and tool setup](README-technical.md#first-time-setup) if these are not configured.
+You need Python 3.12+, Git, AWS CLI v2, Make, Google Chrome, and an AWS SSO profile with Bedrock permissions. No GPU is required. See [first-time AWS and tool setup](README-technical.md#first-time-setup) if these are not configured.
 
 ```sh
 aws sso login --profile oracle
@@ -25,91 +25,58 @@ make setup
 make run
 ```
 
-`make setup` installs the small Python runtime and automatically downloads and verifies the 316 MB [data release](https://github.com/swkarlekar/health-research-oracle-public/releases/tag/data-2026-11-11): documents, PDFs, document vectors, and relationship map. It does not download an LLM or create AWS resources. `make run` opens the local page in Chrome. Keep the terminal running; Ctrl+C stops the server. On subsequent visits, sign into AWS and run `make run` from the project folder.
+`make setup` installs a small Python runtime and downloads and verifies the 364 MB [data release](https://github.com/swkarlekar/health-research-oracle-public/releases/tag/data-2026-11-11-paragraphs): documents, PDFs, search indexes, and an optional document map. It does not download an LLM or create AWS resources. `make run` opens the local page in Chrome. Keep the terminal running; Ctrl+C stops the server.
 
-Open **⚙ Model settings**, check your AWS account, select a model, and explicitly authorize a small spending allowance before asking a new question. Merely opening the app or saving a model choice does not authorize paid calls. Each collaborator uses their own AWS account; no keys or credentials are shared with the project.
-
-**Model settings and spending controls**
+Open **⚙ Model settings**, check your AWS account, and explicitly authorize a spending allowance before asking a question. Opening the app or saving a model choice does not authorize paid calls. Each collaborator uses their own AWS account; no keys are shared with the project.
 
 ![Model settings with Bedrock selection and explicit spending consent](docs/screenshots/model-settings.jpg)
 
-Paid calls are disabled in this screenshot. The displayed ledger is this developer workspace’s recorded trial usage; a new installation creates its own ledger.
-
-
 ## Using the workspace
 
-- **Ask a research question.** The sidebar starts with the four client reference cases, with original and simplified wording where supplied, followed by five boundary tests and 15 synthetic examples. The client cases are the primary answer-quality benchmark; the synthetic examples are supplementary. Follow-up questions can use earlier user messages; previous generated answers never become evidence.
-- **Choose where the answer is generated.** The default is **Qwen3 32B on Amazon Bedrock**. Settings also lists Amazon Nova Lite and Nova Pro, or discovers already installed models in Ollama, LM Studio, and other local OpenAI-compatible servers. Discovery does not load or download a model. Local inference needs enough memory and may be slow on a CPU.
-- **Choose a historical date.** Expand the research scope and set **Rules as of** to the date whose rules you want researched—for example, a past notice or coverage period. Leave it blank if unspecified. The system checks document dates and applicability; the date does not supply a missing historical edition or guarantee that the collection establishes the rules then in force. Plan type is inferred from the question, with clarification when needed.
-- **Read the evidence.** Responses show supported findings, exact quotations, citations, and unresolved gaps. Click a citation to browse the saved document and highlighted text. **View debug report** shows retrieval, context expansion, relationship leads, model instructions, review results, usage, and validation failures. Private chain-of-thought is not requested or recorded.
-
-**Example answer and highlighted source**
+- **Ask a research question.** The sidebar offers the four client reference cases, five boundary tests, and 15 synthetic examples. Follow-up questions can build on your earlier questions; earlier generated answers are never treated as evidence.
+- **Read the answer and its evidence.** Each response leads with a direct answer, then findings that each name their source, then the exact quotations. Click a citation to open the document with the text highlighted.
+- **Read the uncertainties.** Under each answer the tool lists what the sources leave open: wording that can be read two ways, exceptions that might apply, sources that disagree, and things the sources do not address, each with a follow-up question. It is designed to raise a doubt rather than hide one.
+- **Choose the models.** By default Qwen3 32B on Amazon Bedrock plans the search and screens passages, and Mistral Large 3 writes the answer. Settings also offers Nova Lite and Nova Pro, or a model already installed in Ollama, LM Studio, or another local server.
+- **Inspect a run.** **View debug report** shows every step: the search plan, the passages read, the instructions given to the model, and what each step returned.
 
 ![Saved partial answer with clickable citations](docs/screenshots/IMG_1702.png)
 
-This historical saved result illustrates the interface. It contains known applicability errors and is not a validated legal answer.
-
 ![Embedded source viewer with the quoted text highlighted](docs/screenshots/IMG_3644.png)
 
-This example shows a saved text source. PDF sources open in the paginated viewer; highlights locate text and do not establish legal applicability.
-
-**Open the official source**
-
-![Official eCFR source opened from the document viewer](docs/screenshots/IMG_4666.png)
-
-The official-source link opens the publisher’s website separately from corpus-grounded research.
-
-
-Document retrieval combines **vector similarity and keyword search** on your laptop, alongside the local relationship map. **New query vectors still use AWS Titan**, even when the answer model is local; identical cached queries reuse their vectors. Bedrock generation sends the question and selected source context to AWS. Local generation sends that context only to the selected loopback model server. The demo has no hosted server or offline chatbot mode. [Storage, privacy, costs, and model setup](README-technical.md) explains the details.
+Screenshots are from an earlier version of the interface.
 
 ## How the harness works
 
-The harness surrounds the LLM with source selection, context, review, and quotation checks. This is the implemented flow corresponding to the [original diagram](mermaid-diagram.png):
+A model answers well from a dozen clean passages and badly from fifty mixed ones, and the passage that answers a question is usually written in words the advocate did not use. The harness is built around getting the right dozen passages in front of the model, then checking what it wrote.
 
 ```mermaid
 flowchart TD
-    Q[Advocate research question] --> S{Research scope sufficient?}
-    S -->|No| C[Ask focused clarification]
-    C --> Q
-    S -->|Yes| B[Check requested outputs and public research intent]
-    B -->|Public research remains| R[Hybrid vector and keyword retrieval from approved sources]
-    B -->|Capability limit or missing attributes| N[Explain limits or ask clarification; no source search]
-    V[Source registry and document relationship map] --> R
-    R --> E[Expand context and draft findings]
-    E --> J[Separate LLM review: support, exceptions, dates, conflicts]
-    J -->|Specific evidence missing; once only| A[Additional corpus search]
-    A --> J
-    J --> P[Validate exact quotations, citations, scope, and boundaries]
-    P --> O[Supported findings, explicit limits, clarification, or no suitable answer]
-    P -->|Invalid output| F[Withhold answer; retain debug report]
+    Q["Advocate question"] --> G["Check the request: research, or something the tool must not do?"]
+    G -->|Outside the tool's limits| N["Explain the limit; no search"]
+    G -->|Research| P["Plan: restate the question and write search texts in the sources' vocabulary"]
+    P --> S["Search the approved sources on the laptop"]
+    S --> R["Read: many small calls keep the passages worth quoting"]
+    R --> T["Triage: choose the key passages"]
+    T --> A["Answer from those passages: findings first, then the direct answer"]
+    A --> C["Check each finding against the passages it cites"]
+    A --> D["Second reader: raise doubts and follow-up questions"]
+    C --> O["Validate exact quotations and citations"]
+    D --> O
+    O --> F["Answer, findings, quotations, uncertainties"]
 ```
 
-Two query-only LLM checks separate public-rule research from requests for private access, guarantees, or individual conclusions. Mixed requests can continue with explicit capability limits. The map provides documentary links and version leads; the second LLM pass checks the retrieved evidence and proposed findings. Dates embedded in source text take priority. Allowed last-modified metadata embedded in a document is only a labeled secondary proxy, never proof that a rule became effective or replaced another rule. Unresolved conflicts and missing evidence remain visible.
-
-For a concrete look at the instructions, see **[prompt examples and the actual prompt sources](docs/prompts.md)**. For example, the reviewer is told: “Newer documents do not automatically supersede older ones. Require explicit documentary language for any version relationship.”
+Models only ever return passage identifiers; the program resolves each one to exact source text, so a quotation cannot be invented. Searching runs on your laptop over the downloaded indexes. Answer generation sends the question and selected source text to Amazon Bedrock. [How the harness works](docs/harness.md) describes each step, and [the prompts](docs/prompts.md) shows the instructions.
 
 ## Current limits
 
-The [client-priority optimization](docs/client-priority-optimization.md) tested all seven supplied question wordings and the five boundary examples using the expanded corpus. It recovered important passages, including the assessment-location clause, but still confused Service Legacy with Plan Legacy and missed DME payer details. Its broader planner and answer pipeline remain experimental. **Only hybrid search and a tested request-guard wording fix are enabled; the four client answers are not yet reliably correct.** The narrow guard test allowed all seven client questions and stopped all five boundary-only requests; it does not establish answer correctness. [Exact experimental responses](docs/client-priority-responses.md) preserve the failures as well as useful passages.
+This is a research prototype, not a validated legal advice system. On the four client reference cases the answers reach the expected conclusion with the expected sources in most runs, but they were judged by the developers, not by a legal reviewer, and the same question can produce somewhat different supporting passages from one run to the next. A matching quotation and a passed support check do not prove an answer is legally correct or complete.
 
-The [earlier advocate-case optimization](docs/advocate-optimization.md), its [exact responses](docs/advocate-optimization-examples.md), and an [independent review](docs/advocate-independent-review.md) provide the preceding results. Its code remains on an [experimental branch](https://github.com/swkarlekar/health-research-oracle-public/tree/experiment/advocate-ground-truth).
-
-The [thinking-mode comparison](docs/reasoning-comparison.md) records fresh Qwen thinking-off/on runs on the four simplified questions, including failures, exact responses, latency and cost. It also records access failures for Haiku/Grok and structured-output failures for the requested Llama and GPT-OSS alternatives; none established a reliable replacement.
-
-The [updated-corpus retest](docs/client-corpus-retest.md) separates retrieval, context selection, and answer-review failures using the expanded source collection. It includes the [exact responses](docs/client-corpus-retest-responses.md); these are historical baseline runs, not evidence that the answer-quality problems have been resolved.
-
-This is a research prototype, not a validated legal advice system. Matching quotations and a favorable LLM review do not prove legal correctness or completeness. Testing has found missed conditions, wrong-program applicability, unsupported conclusions, and operational rejections. The [prompt experiments](docs/prompt-search.md) improved some results but did not establish reliable legal synthesis. A narrow request-boundary guard is enabled; experimental source-answering pipelines have not replaced the production drafting/review prompts.
-
-In the [advocate-case comparison](docs/advocate-comparison.md), six of seven question variants stopped before source search, and the remaining run missed relevant indexed passages. None produced a substantive cited answer.
-
-The current package contains **81 evidence-producing documents and 7,044 searchable chunks**, from 120 source records; 38 acquired indexes are excluded from evidence retrieval and one private target remains unavailable. The [source recovery audit](docs/source-recovery.md) explains coverage of the client workbook and original resource list, historical/secondary copies, and the confidential training document excluded from sharing. Research is limited to the supplied sources. Do not enter client identifiers or ask the system to access private case records, decide an individual violation, guarantee an outcome, or recommend client-specific action steps.
+Research is limited to the supplied sources: 81 documents, about 7,000 searchable passages. The tool does not verify that a source is current, and some sources contain old figures. Do not enter client identifiers, and do not ask the tool to access private case records, decide whether an individual's rights were violated, guarantee an outcome, or recommend client-specific action.
 
 ## Further reading
 
-- [Technical README](README-technical.md): AWS SSO, permissions, SQLite/vector storage, developer commands, and spending controls.
-- [Prompt examples](docs/prompts.md) and [prompt-search findings](docs/prompt-search.md).
-- [Advocate question comparison](docs/advocate-comparison.md): original and simplified questions, actual responses, reference-answer differences, timing, and cost.
+- [How the harness works](docs/harness.md): each step of the pipeline and its settings.
+- [The prompts](docs/prompts.md): the instructions behind each step.
+- [Technical README](README-technical.md): AWS setup, permissions, storage, spending controls, and developer commands.
 - [Chat and document viewer](docs/local-interface.md).
-- [Data release and verification](docs/data-bundle.md), including the [public distribution audit](docs/publication-audit.md).
-- [Local vector retrieval and AWS comparison](docs/local-vectors.md).
-- [Architecture](docs/architecture.md), [validation record](docs/validation.md), and [code cleanup review](docs/code-review.md).
+- [Data release and verification](docs/data-bundle.md).

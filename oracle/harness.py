@@ -1,4 +1,7 @@
-"""Bounded draft/review/search loop matching mermaid-diagram.png."""
+"""Harness entry point: request guard, then the research pipeline or the original draft/review loop.
+
+See docs/harness.md for the flow diagram and a description of each step.
+"""
 from __future__ import annotations
 
 import copy
@@ -125,13 +128,18 @@ def empty_response(packet, status, questions=None, description=None):
 
 
 class Harness:
-    def __init__(self, corpus, model=None, limit=4, reviewer=None, trace=None, request_guard=False):
+    def __init__(self, corpus, model=None, limit=4, reviewer=None, trace=None, request_guard=False, pipeline=None):
         if not 1 <= limit <= 6:
             raise HarnessError("Harness limit must be between 1 and 6 per search")
         self.corpus, self.model, self.limit = corpus, model, limit
         self.reviewer = reviewer if reviewer is not None else model
         self.trace = trace
         self.request_guard, self.request_decision = request_guard, None
+        if pipeline not in (None, 'research'):
+            raise HarnessError("Unknown harness pipeline")
+        # 'research' = plan / multi-lane search / screen / triage / answer / support check (oracle/pipeline.py).
+        # None keeps the original single-search draft-and-review loop (used for small local models).
+        self.pipeline = pipeline
 
     def _event(self, stage, **details):
         if self.trace is not None:
@@ -178,6 +186,8 @@ class Harness:
                                     'review': None, 'request_route': decision,
                                     'model': getattr(self.model, 'model', getattr(self.model, 'model_id', None)),
                                     'usage': getattr(self.model, 'usage', [])}}
+        if self.pipeline == 'research' and self.model is not None and not evidence_only:
+            return self._research(question, scope)
         packet = self.corpus.packet(question, scope, self.limit)
         if self.trace is not None:
             self.trace.packet("initial_retrieval_and_expansion", packet, self.corpus)
@@ -232,6 +242,56 @@ class Harness:
                                                   "evidence_ids": [], "question_for_user": None})
             return self.finish(packet, response, searches, calls, review)
         raise HarnessError("Harness did not reach a bounded result")
+
+    def _research(self, question, scope):
+        from .pipeline import ResearchPipeline
+        retriever = getattr(self.corpus, 'retriever', self.corpus)
+        run = ResearchPipeline(
+            self.corpus,
+            lambda role, system, payload, schema: self._complete(role, self.model, system, payload, schema),
+            lambda role, system, payload, schema: self._complete(role, self.reviewer, system, payload, schema),
+            self._event)
+        packet, response, info = run.run(question, scope)
+        if packet is None:
+            packet = retriever.packet_from_chunks(question, scope, [], {
+                'engine': 'research_pipeline', 'mode': 'planned_multi_lane', 'semantic_retrieval': True,
+                'requested_limit': 0, 'collection_indexes_included': False, 'completeness_verified': False})
+            response = empty_response(packet, "not_found", description="No suitable passage was retrieved from the selected corpus. This does not establish that no rule exists.")
+        if self.trace is not None:
+            self.trace.packet("research_evidence", packet)
+        # Reject fabricated citations, altered scope, and invalid spans exactly as the original loop does.
+        base.render_response(packet, response, retriever)
+        check_response_boundary(response)
+        response = copy.deepcopy(response)
+        calls = info['model_calls']
+        if self.request_decision:
+            response = attach_to_research_response(response, self.request_decision)
+            calls += self.request_decision['model_calls']
+            check_response_boundary(response)
+        result = base.render_response(packet, response, retriever)
+        if hasattr(self.corpus, 'quotation_locator'):
+            evidence = {e['chunk_id']: e for e in packet['evidence']}
+            for quote in result['quotes']:
+                quote['citation'].update(self.corpus.quotation_locator(evidence[quote['chunk_id']], quote['start'], quote['end']))
+        self._event("final_validation", canonical_citations=True, quote_spans=True, scope_preserved=True,
+                    context_graph_validated=False, metadata_proxies_used=[],
+                    semantic_judgment="Model support check only; not independent legal verification")
+        result.update({"model_invoked": True, "metadata_date_proxies_used": [], "context_expansion": None,
+                       "harness": {"pipeline": "research", "searches": 1, "model_calls": calls,
+                                   "max_searches": 1, "max_model_calls": None, "review": None,
+                                   "research": {k: v for k, v in info.items() if k != 'model_calls'},
+                                   "review_scope": "Each finding was compared with its own cited passages; this is not an exhaustive corpus comparison or a legal review.",
+                                   "quote_policy": "Model-selected passage ids resolved to canonical spans; key passages the answer did not cite are shown as additional quotations.",
+                                   "registry_sha256": base.digest(base.canonical(self.corpus.registry)),
+                                   "temporal_policy_sha256": base.digest(base.canonical(self.corpus.temporal_policy)),
+                                   "model": getattr(self.model, "model", getattr(self.model, "model_id", None)),
+                                   "usage": getattr(self.model, "usage", []),
+                                   "review_model": getattr(self.reviewer, "model", getattr(self.reviewer, "model_id", None))}})
+        if self.reviewer is not self.model:
+            result["harness"]["review_usage"] = getattr(self.reviewer, "usage", [])
+        if self.request_decision:
+            result['harness']['request_route'] = self.request_decision
+        return result
 
     def finish(self, packet, response, searches, calls, review):
         response = copy.deepcopy(response)

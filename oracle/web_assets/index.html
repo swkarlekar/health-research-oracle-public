@@ -35,8 +35,6 @@
       </form>
       <div id="scope-panel" class="scope-panel" hidden>
         <label>Program / jurisdiction<input id="program" value="New York Medicaid" maxlength="160"></label>
-        <label>Rules as of<input id="research-date" type="date" aria-describedby="date-help"></label>
-        <p id="date-help" class="field-note">Choose a date for historical research. Leave blank if unspecified; source dates still need verification.</p>
       </div>
       <p class="composer-note">Use general scenarios without identifying information. Answers are limited to the supplied corpus.</p>
     </div>
@@ -49,7 +47,8 @@
   <form id="settings-form" class="settings-content">
     <p class="settings-intro">Retrieval uses the shared local documents and Titan vectors. Choose where the answer is generated.</p>
     <label>Answer model provider<select id="settings-provider"><option value="bedrock">Amazon Bedrock</option><option value="ollama">Ollama</option><option value="lmstudio">LM Studio</option><option value="openai-local">Other local OpenAI-compatible server</option></select></label>
-    <div id="bedrock-fields"><label>Bedrock model<select id="settings-bedrock-model"></select></label><p id="settings-price" class="field-note"></p></div>
+    <div id="bedrock-fields"><label>Bedrock model<select id="settings-bedrock-model"></select></label><p id="settings-price" class="field-note"></p>
+      <label class="settings-check"><input id="settings-answer-model" type="checkbox" checked> <span id="settings-answer-model-label">Write the final answer with a second, stronger model.</span></label></div>
     <div id="local-fields" hidden>
       <label>Local server URL<input id="settings-local-url" type="url" value="http://127.0.0.1:11434" spellcheck="false"></label>
       <button id="refresh-local-models" type="button" class="small-button">Find local models</button>
@@ -65,7 +64,7 @@
       <button id="check-aws" type="button" class="small-button">Check account and available models</button>
       <p id="settings-account" class="field-note">Uses local AWS credentials. No access keys are entered or shared here.</p>
       <label>New session allowance (USD)<input id="settings-allowance" type="number" min="0.01" max="10" step="0.01" value="0.25"></label>
-      <label class="settings-check"><input id="settings-authorize" type="checkbox"> I explicitly authorize paid Titan query embeddings and, when selected, Bedrock generation on the displayed account, up to this allowance for four hours.</label>
+      <label class="settings-check"><input id="settings-authorize" type="checkbox"> I explicitly authorize paid Titan query embeddings and, when selected, Bedrock generation (the model chosen above and, if its box is ticked, the answer-writing model named above) on the displayed account, up to this allowance for four hours.</label>
       <p id="settings-budget" class="field-note"></p>
       <p class="field-note">Spending controls apply on this computer. There is no automatic fallback to another model.</p>
     </fieldset>
