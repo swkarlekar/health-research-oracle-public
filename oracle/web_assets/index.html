@@ -11,9 +11,19 @@
 <aside class="sidebar">
   <a class="brand" href="/" aria-label="TRACE home"><img class="brand-mark" src="/trace-logo.svg" alt="" width="48" height="48"><span><strong>TRACE</strong><small>advocacy research</small></span></a>
   <button id="new-chat" class="primary new-chat"><span aria-hidden="true">＋</span> New research</button>
-  <details class="sidebar-examples"><summary>Example questions</summary><select id="examples" aria-label="Choose an example question"><option value="">Choose a scenario…</option></select><button id="saved-example" class="text-button" hidden>Open saved example ↗</button></details>
-  <div class="sidebar-label">YOUR RESEARCH</div>
-  <nav id="history" aria-label="Research history"></nav>
+  <div class="side-tabs" role="tablist" aria-label="Sidebar sections">
+    <button id="tab-research" class="side-tab" role="tab" aria-selected="true" aria-controls="panel-research">Research</button>
+    <button id="tab-documents" class="side-tab" role="tab" aria-selected="false" aria-controls="panel-documents" tabindex="-1">Documents <span id="doc-count" class="tab-count" hidden></span></button>
+  </div>
+  <section id="panel-research" class="side-panel" role="tabpanel" aria-labelledby="tab-research">
+    <details class="sidebar-examples"><summary>Example questions</summary><select id="examples" aria-label="Choose an example question"><option value="">Choose a scenario…</option></select><button id="saved-example" class="text-button" hidden>Open saved example ↗</button></details>
+    <div class="sidebar-label">YOUR RESEARCH</div>
+    <nav id="history" aria-label="Research history"></nav>
+  </section>
+  <section id="panel-documents" class="side-panel" role="tabpanel" aria-labelledby="tab-documents" hidden>
+    <div class="doc-search"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M13 13l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><input id="doc-search" type="search" placeholder="Find a document or phrase" aria-label="Find a document by title, citation, or phrase" autocomplete="off" spellcheck="false"><kbd aria-hidden="true">/</kbd><button id="doc-clear" class="doc-clear" type="button" aria-label="Clear search" hidden>×</button></div>
+    <div id="doc-results" class="doc-results" aria-live="polite"></div>
+  </section>
   <div class="sidebar-bottom"><span class="local-dot"></span><div><strong>Local workspace</strong><small>History stays on this computer</small></div></div>
 </aside>
 <main>
@@ -28,10 +38,9 @@
   </div>
   <div class="composer-area">
     <div class="composer-width">
-      <div id="context-row" class="context-row" hidden><label><input id="use-history" type="checkbox" checked> Use earlier user questions as context</label></div>
       <form id="question-form" class="composer">
         <textarea id="question" rows="3" maxlength="1600" placeholder="Ask a research question or describe a general scenario…" aria-label="Research question" required></textarea>
-        <div class="composer-toolbar"><button id="scope-toggle" class="scope-button" type="button" aria-expanded="false">New York Medicaid <span aria-hidden="true">⌄</span></button><span id="model-label" class="model-label">Qwen3 32B</span><button id="send" class="send-button" type="submit" disabled aria-label="Send research question">↑</button></div>
+        <div class="composer-toolbar"><button id="scope-toggle" class="scope-button" type="button" aria-expanded="false">New York Medicaid <span aria-hidden="true">⌄</span></button><label id="context-row" class="context-toggle" hidden title="Include your earlier questions in this thread as context. Earlier answers are never used as evidence."><input id="use-history" type="checkbox" checked><span>Follow-up</span></label><span id="model-label" class="model-label">Qwen3 32B</span><button id="send" class="send-button" type="submit" disabled aria-label="Send research question">↑</button></div>
       </form>
       <div id="scope-panel" class="scope-panel" hidden>
         <label>Program / jurisdiction<input id="program" value="New York Medicaid" maxlength="160"></label>
@@ -79,7 +88,7 @@
 <dialog id="source-dialog" class="source-dialog" aria-labelledby="source-heading">
   <header class="source-header"><div><div class="eyebrow">SOURCE DOCUMENT</div><h2 id="source-heading">Loading source…</h2></div><button id="close-source" class="icon-button" aria-label="Close source viewer">×</button></header>
   <div class="source-toolbar"><div class="page-controls"><button id="previous-page" class="icon-button" aria-label="Previous PDF page">‹</button><label>Page <input id="page-number" type="number" min="1" aria-label="PDF page number"></label><span id="page-count"></span><button id="next-page" class="icon-button" aria-label="Next PDF page">›</button></div><div class="source-tools"><button id="jump-citation" class="text-button">Jump to citation</button><button id="toggle-highlights" class="small-button" aria-pressed="true">Highlights on</button><button id="zoom" class="small-button" aria-pressed="false">Zoom in</button><a id="original-link" class="small-button" target="_blank" rel="noopener noreferrer">Open original ↗</a></div></div>
-  <div class="source-layout"><div id="document-pages" class="document-pages" aria-label="Scrollable source document"></div><aside class="quote-panel"><div class="eyebrow">CITED PASSAGE</div><div id="highlight-note" class="highlight-note"></div><blockquote id="selected-quote"></blockquote><a id="official-link" target="_blank" rel="noopener noreferrer">Official source ↗</a><p class="viewer-footnote">The document shown is the saved corpus copy. Highlights locate matching text; they do not verify its legal applicability.</p></aside></div>
+  <div class="source-layout"><div id="document-pages" class="document-pages" aria-label="Scrollable source document"></div><aside class="quote-panel"><form id="doc-find" class="doc-find" role="search" hidden><label for="doc-find-input" class="eyebrow">FIND IN DOCUMENT</label><div class="find-row"><input id="doc-find-input" type="search" placeholder="Search this document" autocomplete="off" spellcheck="false"><button class="small-button" type="submit">Find</button></div><div class="find-nav"><span id="find-status" aria-live="polite"></span><button id="find-prev" class="icon-button" type="button" aria-label="Previous match" disabled>‹</button><button id="find-next" class="icon-button" type="button" aria-label="Next match" disabled>›</button></div></form><div id="doc-about" class="doc-about" hidden></div><div id="quote-eyebrow" class="eyebrow">CITED PASSAGE</div><div id="highlight-note" class="highlight-note"></div><blockquote id="selected-quote"></blockquote><a id="official-link" target="_blank" rel="noopener noreferrer">Official source ↗</a><p class="viewer-footnote">The document shown is the saved corpus copy. Highlights locate matching text; they do not verify its legal applicability.</p></aside></div>
 </dialog>
 </body>
 </html>

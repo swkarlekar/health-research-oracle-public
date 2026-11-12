@@ -15,6 +15,7 @@ import uuid
 
 from .context import ExpandedCorpus
 from .corpus import ApprovedCorpus, HarnessError, ROOT, base
+from . import library
 from .harness import Harness
 from .output import DebugTrace, demo_result, debug_markdown
 from .policy import check_input, check_response_boundary, clarification_result, inferred_scope
@@ -79,6 +80,7 @@ class LocalApp:
         self.settings_lock = threading.Lock()
         self.viewer_lock = threading.Lock()
         self.viewers = OrderedDict()
+        self.library_lock, self._library = threading.Lock(), None
         self.token = secrets.token_urlsafe(32)
         self.history.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as con:
@@ -121,6 +123,49 @@ class LocalApp:
                 yield ExpandedCorpus(retriever, graph, short_document_chars=4000, max_unit_chars=8000, max_total_chars=8000)
             else:
                 yield ExpandedCorpus(retriever, graph, max_total_chars=self.context_chars)
+
+    @contextmanager
+    def source_corpus(self):
+        """Approved documents without vector indexes or models: opening a source never costs anything."""
+        with ExitStack() as stack:
+            retriever = ApprovedCorpus(self.db, self.registry)
+            stack.callback(retriever.close)
+            graph = GraphStore(self.graph, retriever.summary()['snapshot_sha256'])
+            stack.callback(graph.close)
+            yield ExpandedCorpus(retriever, graph, max_total_chars=self.context_chars)
+
+    def library_data(self):
+        """Verified list and text of every approved document, built once. Opening the saved graph is the slow part."""
+        with self.library_lock:
+            if self._library is None:
+                with self.source_corpus() as corpus:
+                    items = library.entries(corpus.retriever.connection, corpus.retriever.policy)
+                    docs = {}
+                    for item in items:
+                        doc = dict(corpus._document(item['id']))
+                        doc['title'] = item['title']
+                        docs[item['id']] = doc
+                self._library = (items, docs)
+            return self._library
+
+    def documents(self, query=''):
+        items, _ = self.library_data()
+        query = ' '.join(query.split())[:200]
+        if not query:
+            return {'documents': items, 'categories': [{'id': k, 'label': v} for k, v in library.CATEGORIES]}
+        by_id = {item['id']: item for item in items}
+        retriever = ApprovedCorpus(self.db, self.registry)
+        try:
+            hits = library.search_text(retriever.connection, set(by_id), query)
+        finally:
+            retriever.close()
+        return {'query': query, 'matches': [{**by_id[hit['id']], 'page': hit['page'], 'snippet': hit['snippet']} for hit in hits]}
+
+    def document_viewer(self, identity):
+        _, docs = self.library_data()
+        if identity not in docs:
+            raise HarnessError('Document not found')
+        return docs[identity]
 
     def selected_model(self):
         value = self.models.value
@@ -189,7 +234,8 @@ class LocalApp:
         key = (identity, index, base.digest(base.canonical(result['quotes'][index])))
         with self.viewer_lock:
             if key not in self.viewers:
-                with self.corpus() as corpus:
+                # Opening a citation needs verified source text only, never the vector indexes or a model.
+                with self.source_corpus() as corpus:
                     self.viewers[key] = CitationViewer(corpus).freeze(result, index)
                 while len(self.viewers) > 24:
                     self.viewers.popitem(last=False)
@@ -439,6 +485,22 @@ class LocalHandler(BaseHTTPRequestHandler):
                     self.send(debug_markdown(report), 'text/markdown; charset=utf-8', attachment='research-debug.md')
                 else:
                     self.send(report)
+            elif path == '/api/documents':
+                self.send(app.documents(query.get('q', [''])[0]))
+            elif match := re.fullmatch(r'/api/documents/([A-Za-z0-9_]+)(/page/(\d+)\.png|/original)?', path):
+                doc = app.document_viewer(match[1])
+                viewer = CitationViewer(None)
+                if match[2] == '/original':
+                    raw, data = viewer.raw_file(doc)
+                    if data[:5] == b'%PDF-':
+                        self.send(data, 'application/pdf')
+                    else:
+                        self.send(data, 'application/octet-stream', attachment='saved-source' + raw.suffix)
+                elif match[3]:
+                    self.send(viewer.document_image(doc, int(match[3])), 'image/png')
+                else:
+                    page = int(query['page'][0]) if 'page' in query else None
+                    self.send(viewer.describe_document(doc, page, ' '.join(query.get('find', [''])[0].split())[:200]))
             elif match := re.fullmatch(r'/api/runs/([a-f0-9]{32})/quotes/(\d+)(/page/(\d+)\.png|/original)?', path):
                 result, index = app.result(match[1]), int(match[2])
                 viewer = app.viewer(match[1], result, index)
@@ -473,6 +535,7 @@ def serve(args):
         server.app = LocalApp(args.db, args.registry, args.graph, args.history,
                               context_chars=args.context_chars, retriever='local-vector',
                               vector_cache=args.vector_cache, query_cache=args.query_cache)
+        threading.Thread(target=server.app.library_data, daemon=True).start()  # warm the document list
         print(f'TRACE: http://127.0.0.1:{server.server_address[1]} (local only)', flush=True)
         server.serve_forever()
     except KeyboardInterrupt:

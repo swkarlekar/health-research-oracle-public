@@ -96,8 +96,47 @@ class CitationViewer:
             view.pop('text')
         return view
 
+    def describe_document(self, doc, page=None, find=''):
+        """Open a whole saved document with no cited passage; optionally mark every match of a search phrase."""
+        view = {'document_id': doc['document_id'], 'title': doc.get('title'), 'source_url': doc.get('source_url'),
+                'quote': '', 'citation_pages': [], 'kind': 'text', 'original_available': False,
+                'text': doc['text'], 'document_start_char': 0, 'document_end_char': 0, 'boxes': [],
+                'highlight_status': 'none', 'page_count': None, 'page': None, 'find': find, 'find_pages': []}
+        try:
+            _, data = self.raw_file(doc)
+        except HarnessError as exc:
+            view['original_note'] = str(exc)
+            return view
+        view['original_available'] = True
+        if data[:5] != b'%PDF-':
+            return view
+        import fitz
+        with fitz.open(stream=data, filetype='pdf') as pdf:
+            selected = page if page is not None else 1
+            if type(selected) is not int or not 1 <= selected <= len(pdf):
+                raise HarnessError('PDF page is outside the saved document')
+            layouts, highlights, total = [], {}, 0
+            for number, source_page in enumerate(pdf, 1):
+                if source_page.rect.width > 2000 or source_page.rect.height > 3000:
+                    raise HarnessError('Page dimensions exceed the local viewer limit')
+                layouts.append({'page': number, 'width': source_page.rect.width, 'height': source_page.rect.height})
+                if find and total < 400:
+                    rects = [list(r * source_page.rotation_matrix) if getattr(source_page, 'rotation', 0) else list(r)
+                             for r in source_page.search_for(find)][:100]
+                    if rects:
+                        highlights[str(number)] = {'boxes': rects, 'status': 'search_match'}
+                        total += len(rects)
+            view.update({'kind': 'pdf', 'page': selected, 'page_count': len(pdf), 'page_layouts': layouts,
+                         'page_highlights': highlights, 'find_pages': sorted(int(n) for n in highlights),
+                         'find_count': total})
+            view.pop('text')
+        return view
+
     def image(self, result, index, page):
         _, doc, _, _, _ = self.resolve(result, index)
+        return self.document_image(doc, page)
+
+    def document_image(self, doc, page):
         _, data = self.raw_file(doc)
         import fitz
         with fitz.open(stream=data, filetype='pdf') as pdf:
