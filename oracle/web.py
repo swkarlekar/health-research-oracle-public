@@ -15,6 +15,7 @@ import uuid
 
 from .context import ExpandedCorpus
 from .corpus import ApprovedCorpus, HarnessError, ROOT, base
+from . import library
 from .harness import Harness
 from .output import DebugTrace, demo_result, debug_markdown
 from .policy import check_input, check_response_boundary, clarification_result, inferred_scope
@@ -121,6 +122,41 @@ class LocalApp:
                 yield ExpandedCorpus(retriever, graph, short_document_chars=4000, max_unit_chars=8000, max_total_chars=8000)
             else:
                 yield ExpandedCorpus(retriever, graph, max_total_chars=self.context_chars)
+
+    @contextmanager
+    def source_corpus(self):
+        """Approved documents without vector indexes or models: opening a source never costs anything."""
+        with ExitStack() as stack:
+            retriever = ApprovedCorpus(self.db, self.registry)
+            stack.callback(retriever.close)
+            graph = GraphStore(self.graph, retriever.summary()['snapshot_sha256'])
+            stack.callback(graph.close)
+            yield ExpandedCorpus(retriever, graph, max_total_chars=self.context_chars)
+
+    def documents(self, query=''):
+        with self.source_corpus() as corpus:
+            items = library.entries(corpus.retriever.connection, corpus.retriever.policy)
+            query = ' '.join(query.split())[:200]
+            if not query:
+                return {'documents': items, 'categories': [{'id': k, 'label': v} for k, v in library.CATEGORIES]}
+            by_id = {item['id']: item for item in items}
+            hits = library.search_text(corpus.retriever.connection, set(by_id), query)
+            return {'query': query, 'matches': [{**by_id[hit['id']], 'page': hit['page'], 'snippet': hit['snippet']} for hit in hits]}
+
+    def document_viewer(self, identity):
+        if not re.fullmatch(r'[A-Za-z0-9_]{1,80}', identity):
+            raise HarnessError('Document not found')
+        with self.source_corpus() as corpus:
+            try:
+                doc = corpus._document(identity)
+            except KeyError:
+                raise HarnessError('Document not found')
+            doc = dict(doc)
+            items = {item['id']: item for item in library.entries(corpus.retriever.connection, corpus.retriever.policy)}
+            if identity not in items:
+                raise HarnessError('Document not found')
+            doc['title'] = items[identity]['title']
+            return doc
 
     def selected_model(self):
         value = self.models.value
@@ -439,6 +475,22 @@ class LocalHandler(BaseHTTPRequestHandler):
                     self.send(debug_markdown(report), 'text/markdown; charset=utf-8', attachment='research-debug.md')
                 else:
                     self.send(report)
+            elif path == '/api/documents':
+                self.send(app.documents(query.get('q', [''])[0]))
+            elif match := re.fullmatch(r'/api/documents/([A-Za-z0-9_]+)(/page/(\d+)\.png|/original)?', path):
+                doc = app.document_viewer(match[1])
+                viewer = CitationViewer(None)
+                if match[2] == '/original':
+                    raw, data = viewer.raw_file(doc)
+                    if data[:5] == b'%PDF-':
+                        self.send(data, 'application/pdf')
+                    else:
+                        self.send(data, 'application/octet-stream', attachment='saved-source' + raw.suffix)
+                elif match[3]:
+                    self.send(viewer.document_image(doc, int(match[3])), 'image/png')
+                else:
+                    page = int(query['page'][0]) if 'page' in query else None
+                    self.send(viewer.describe_document(doc, page, ' '.join(query.get('find', [''])[0].split())[:200]))
             elif match := re.fullmatch(r'/api/runs/([a-f0-9]{32})/quotes/(\d+)(/page/(\d+)\.png|/original)?', path):
                 result, index = app.result(match[1]), int(match[2])
                 viewer = app.viewer(match[1], result, index)
