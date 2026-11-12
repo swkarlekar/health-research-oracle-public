@@ -32,10 +32,9 @@ While a question is running, a step tracker shows which stage is in progress. A 
 - the direct answer in its own card, with one chip per source and a button for each cited page;
 - supporting findings, each with its sources, and the supporting quotations;
 - **What remains open**: wording that can be read two ways, exceptions, disagreeing sources and things the
-  sources do not address;
-- **Ask a follow-up**: one question per open point. Selecting one sends it in the same conversation.
-  **Narrow the scope (optional)** holds scope questions, which are copied into the message box for you to
-  edit rather than sent.
+  sources do not address. Where a person can settle the doubt, the point ends with a bold **To verify**
+  question for a supervisor, the Department or the plan. These are questions for people, not for the tool;
+- **More information needed**: shown only when the request is missing something, such as the program.
 
 ![Answer card with source chips and page buttons](screenshots/ui-answer.jpg)
 

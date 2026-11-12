@@ -85,14 +85,6 @@ function inline(text) {
   // Models sometimes emphasise with *asterisks*; show emphasis, never the raw markers.
   return String(text??'').split(/\*([^*\n]+)\*/).map((part,i)=>i%2?el('em',{},part):part);
 }
-function askFollowUp(question) {
-  const box=$('question');box.value=question;box.focus();box.setSelectionRange(question.length,question.length);
-  box.scrollIntoView({block:'nearest'});
-}
-function sendQuestion(question) {
-  if(state.busy){message('Please wait for the current research to finish.');return;}
-  $('question').value=question;$('use-history').checked=true;$('question-form').requestSubmit();
-}
 function renderRun(run) {
   const turn=el('article',{class:'turn',id:'run-'+run.id});
   turn.append(el('div',{class:'user-message'},run.question));
@@ -140,11 +132,9 @@ function renderRun(run) {
     }
     answer.append(language);
   }
-  if(uncertainties.length)answer.append(el('section',{class:'uncertainties',id:'unresolved-'+run.id},el('h3',{class:'section-heading'},result.request_boundary_only?'Research boundaries':'What remains open'),el('ul',{},...uncertainties.map(u=>el('li',{},inline(u.description))))));
-  const followUps=[...new Set(uncertainties.map(u=>u.question_for_user).filter(Boolean))];
+  if(uncertainties.length)answer.append(el('section',{class:'uncertainties',id:'unresolved-'+run.id},el('h3',{class:'section-heading'},result.request_boundary_only?'Research boundaries':'What remains open'),el('ul',{},...uncertainties.map(u=>el('li',{},inline(u.description),u.question_for_user?el('strong',{class:'verify'},'To verify: ',inline(u.question_for_user)):null)))));
   const scopeQuestions=[...new Set(result.clarifying_questions||[])];
-  if(followUps.length)answer.append(el('section',{class:'follow-ups'},el('h3',{class:'section-heading'},'Ask a follow-up'),el('div',{class:'chip-list'},...followUps.map(q=>el('button',{type:'button',class:'follow-chip',onClick:()=>sendQuestion(q)},inline(q))))));
-  if(scopeQuestions.length)answer.append(el('details',{class:'scope-questions'},el('summary',{},'Narrow the scope (optional)'),el('p',{class:'clarify-hint'},'Select a question to copy it into the message box, edit it, and send.'),el('ul',{class:'clarify-list'},...scopeQuestions.map(q=>el('li',{},el('button',{type:'button',class:'follow-up',onClick:()=>askFollowUp(q)},inline(q)))))));
+  if(scopeQuestions.length)answer.append(el('section',{class:'clarifications'},el('h3',{class:'section-heading'},'More information needed'),el('ul',{},...scopeQuestions.map(q=>el('li',{},inline(q))))));
   answer.append(el('div',{class:'response-footer'},el('span',{},result.request_boundary_only?'Public-rule research only · No source search was run':'Based on the supplied corpus · Current applicability is not independently verified'),el('button',{class:'text-button',onClick:()=>openDebug(run.id)},'View debug report ↗')));
   turn.append(answer);return turn;
 }

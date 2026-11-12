@@ -40,9 +40,7 @@ The sidebar has two tabs. **Research** holds your conversations and the example 
 
 ![Answer card with source chips and page buttons](docs/screenshots/ui-answer.jpg)
 
-- **Read the uncertainties.** **What remains open** lists what the sources leave unresolved: wording that can be read two ways, exceptions that might apply, sources that disagree, and things the sources do not address. Each comes with a suggested follow-up question under **Ask a follow-up**; select one to send it in the same conversation. Scope questions are collapsed under **Narrow the scope (optional)**. The tool is designed to raise a doubt rather than hide one.
-
-![Open points and suggested follow-up questions](docs/screenshots/ui-open-points-followups.jpg)
+- **Read the uncertainties.** **What remains open** lists what the sources leave unresolved: wording that can be read two ways, exceptions that might apply, sources that disagree, and things the sources do not address. Where a doubt can be settled by a person, the open point ends with a bold **To verify** question to take to a supervisor, the Department or the plan. If the request itself is missing something, such as the program, the tool lists what it needs under **More information needed**. The tool is designed to raise a doubt rather than hide one.
 
 - **Check a citation.** Click a page button to open the document at that passage, highlighted.
 
@@ -78,7 +76,7 @@ The sidebar has two tabs. **Research** holds your conversations and the example 
 | ![Progress steps while a question runs](docs/screenshots/ui-progress.jpg) | ![Service Legacy question: direct answer with its source](docs/screenshots/ui-answer-service-legacy.jpg) |
 | Step tracker while a question runs | Service Legacy status (Minimum Needs Requirement) |
 | ![Medicare and Medicaid DME question with three sources](docs/screenshots/ui-answer-dme.jpg) | ![Follow-up turn in the same thread](docs/screenshots/ui-thread-follow-up.jpg) |
-| Medicare or MLTC for DME: one chip per source, a button per page | A follow-up sent from a suggested question, same thread |
+| Medicare or MLTC for DME: one chip per source, a button per page | A follow-up question in the same thread |
 | ![Supporting findings with source chips](docs/screenshots/ui-supporting-findings.jpg) | ![Title matches highlighted in the Documents tab](docs/screenshots/ui-documents-title-match.jpg) |
 | Supporting findings, each with its sources | Search terms highlighted in matching titles |
 | ![Statute opened with find-in-document](docs/screenshots/ui-document-statute-find.jpg) | ![Documents search with no results](docs/screenshots/ui-documents-no-results.jpg) |
