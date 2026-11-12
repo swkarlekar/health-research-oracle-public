@@ -484,6 +484,7 @@ function renderLibrary() {
 }
 function searchLibrary() {
   const query=$('doc-search').value.trim();
+  $('doc-clear').hidden=!$('doc-search').value;
   renderLibrary();
   clearTimeout(state.library.timer);
   if(query.length<3)return;
@@ -590,6 +591,7 @@ $('tab-research').addEventListener('click',()=>setTab('research'));
 $('tab-documents').addEventListener('click',()=>setTab('documents'));
 for(const id of ['tab-research','tab-documents'])$(id).addEventListener('keydown',event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){const name=id==='tab-research'?'documents':'research';setTab(name);$('tab-'+name).focus();}});
 $('doc-search').addEventListener('input',searchLibrary);
+$('doc-clear').addEventListener('click',()=>{$('doc-search').value='';searchLibrary();$('doc-search').focus();});
 $('panel-documents').addEventListener('keydown',libraryKeys);
 $('doc-find').addEventListener('submit',submitFind);
 $('find-next').addEventListener('click',()=>stepMatch(1));
