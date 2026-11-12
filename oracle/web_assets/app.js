@@ -60,6 +60,14 @@ function progressLabel(progress) {
   if(progress==='draft_validation')return 'Preparing the independent review…';
   return 'Searching the corpus and following source connections…';
 }
+function inline(text) {
+  // Models sometimes emphasise with *asterisks*; show emphasis, never the raw markers.
+  return String(text??'').split(/\*([^*\n]+)\*/).map((part,i)=>i%2?el('em',{},part):part);
+}
+function askFollowUp(question) {
+  const box=$('question');box.value=question;box.focus();box.setSelectionRange(question.length,question.length);
+  box.scrollIntoView({block:'nearest'});
+}
 function renderRun(run) {
   const turn=el('article',{class:'turn',id:'run-'+run.id});
   turn.append(el('div',{class:'user-message'},run.question));
@@ -82,7 +90,7 @@ function renderRun(run) {
   else if(result.status==='not_found')answer.append(el('p',{},'I could not establish a suitable answer from the supplied evidence. This does not mean that no rule exists.'));
   if(result.findings?.length) {
     answer.append(el('h3',{class:'section-heading'},'What the evidence supports'));
-    for(const finding of result.findings)answer.append(el('div',{class:'finding'},el('p',{},finding.text),...(finding.citations||[]).map(ref=>cite(ref,run))));
+    for(const finding of result.findings)answer.append(el('div',{class:'finding'},el('p',{},inline(finding.text)),...(finding.citations||[]).map(ref=>cite(ref,run))));
   }
   if(result.quotes?.length) {
     const language=el('details',{class:'source-language',...(!result.findings?.length?{open:''}:{})},el('summary',{class:'section-heading'},`Verbatim source passages (${result.quotes.length})`));
@@ -96,9 +104,9 @@ function renderRun(run) {
     answer.append(language);
   }
   const uncertainties=result.uncertainties||[];
-  if(uncertainties.length)answer.append(el('section',{class:'uncertainties'},el('h3',{class:'section-heading'},result.request_boundary_only?'Research boundaries':'What remains unresolved'),el('ul',{},...uncertainties.map(u=>el('li',{},u.description)))));
+  if(uncertainties.length)answer.append(el('section',{class:'uncertainties'},el('h3',{class:'section-heading'},result.request_boundary_only?'Research boundaries':'What remains unresolved'),el('ul',{},...uncertainties.map(u=>el('li',{},inline(u.description))))));
   const questions=[...(result.clarifying_questions||[]),...uncertainties.map(u=>u.question_for_user).filter(Boolean)];
-  if(questions.length)answer.append(el('section',{class:'clarifications'},el('h3',{class:'section-heading'},'More information needed'),el('ul',{},...[...new Set(questions)].map(q=>el('li',{},q)))));
+  if(questions.length)answer.append(el('section',{class:'clarifications'},el('h3',{class:'section-heading'},'More information needed'),el('p',{class:'clarify-hint'},'Select a question to copy it into the message box, then edit and send it.'),el('ul',{class:'clarify-list'},...[...new Set(questions)].map(q=>el('li',{},el('button',{type:'button',class:'follow-up',onClick:()=>askFollowUp(q)},inline(q)))))));
   answer.append(el('div',{class:'response-footer'},el('span',{},result.request_boundary_only?'Public-rule research only · No source search was run':'Based on the supplied corpus · Current applicability is not independently verified'),el('button',{class:'text-button',onClick:()=>openDebug(run.id)},'View debug report ↗')));
   turn.append(answer);return turn;
 }
@@ -143,7 +151,7 @@ function upsert(run) {
   const index=state.runs.findIndex(r=>r.id===run.id);
   if(index<0)state.runs.push(run);else state.runs[index]=run;
   const old=$('run-'+run.id);
-  if(old)old.replaceWith(renderRun(run));else renderMessages();
+  if(old){old.replaceWith(renderRun(run));refreshCited();}else renderMessages();
 }
 async function poll(runId) {
   let previous='';

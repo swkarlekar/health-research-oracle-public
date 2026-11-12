@@ -289,3 +289,14 @@ dialog::backdrop{background:#16352b66;backdrop-filter:blur(3px)}
 .source-dialog.text-doc .source-layout{height:calc(100% - 82px)}
 .about-link{display:inline-block;margin-top:10px;font-size:11px}
 .doc-find input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+
+.clarify-list{list-style:none;padding:0!important;margin:6px 0 0!important}
+.clarify-list li+li{margin-top:4px}
+.follow-up{display:block;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:7px;padding:6px 9px 6px 26px;font-size:13px;line-height:1.6;color:var(--ink);position:relative}
+.follow-up::before{content:"↳";position:absolute;left:8px;color:var(--teal)}
+.follow-up:hover{background:#fff;border-color:#d4e0cc}
+.clarify-hint{font-size:11px;color:var(--muted);margin:0 0 4px}
+.finding em,.uncertainties em{font-style:italic}
+.clarify-list li+li{margin-top:0}
+.clarifications .clarify-list{font-size:13px}
+.follow-up{padding-top:4px;padding-bottom:4px}
