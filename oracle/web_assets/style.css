@@ -275,3 +275,17 @@ dialog::backdrop{background:#16352b66;backdrop-filter:blur(3px)}
 .doc-search input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
 .doc-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#7b8f84;font-size:18px;line-height:1;width:24px;height:24px;border-radius:5px;padding:0}
 .doc-clear:hover{background:#e7ede2;color:var(--deep)}
+
+.doc-title mark{background:#f3e3a0;color:inherit;border-radius:2px;padding:0 1px}
+.doc-results{-webkit-mask-image:linear-gradient(transparent 0,#000 6px,#000 calc(100% - 22px),transparent 100%);mask-image:linear-gradient(transparent 0,#000 6px,#000 calc(100% - 22px),transparent 100%)}
+.doc-skeleton{max-width:920px;margin:25px auto;background:#fff;padding:40px;border-radius:2px;box-shadow:0 2px 9px #1b322b25}
+.doc-skeleton i,.doc-item-skeleton i{display:block;height:11px;border-radius:6px;background:linear-gradient(90deg,#e6ece3 25%,#f2f5f0 50%,#e6ece3 75%);background-size:200% 100%;animation:shimmer 1.3s linear infinite;margin-bottom:14px}
+.doc-skeleton i:nth-child(odd){width:92%}.doc-skeleton i:nth-child(even){width:70%}
+.doc-item-skeleton{padding:9px 10px 4px}.doc-item-skeleton i:first-child{width:88%}.doc-item-skeleton i:last-child{width:40%;height:8px}
+@keyframes shimmer{to{background-position:-200% 0}}
+.doc-item{transition:background .12s}
+.source-tools{margin-left:auto}
+.source-dialog.text-doc .source-toolbar{display:none}
+.source-dialog.text-doc .source-layout{height:calc(100% - 82px)}
+.about-link{display:inline-block;margin-top:10px;font-size:11px}
+.doc-find input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}

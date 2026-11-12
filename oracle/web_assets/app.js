@@ -393,9 +393,10 @@ function jumpPage(page) {
 const BROWSE_FLAG='oracle.sidebarTab';
 function setBrowse(on) {
   $('source-dialog').classList.toggle('browse',on);
+  if(!on)$('source-dialog').classList.remove('text-doc');
   for(const id of ['doc-find','doc-about'])$(id).hidden=!on;
   for(const id of ['quote-eyebrow','selected-quote','jump-citation'])$(id).hidden=on;
-  $('toggle-highlights').hidden=false;
+  $('toggle-highlights').hidden=false;$('zoom').hidden=false;document.querySelector('.page-controls').hidden=false;
 }
 function setTab(name,focus=false) {
   for(const tab of ['research','documents']){
@@ -407,7 +408,7 @@ function setTab(name,focus=false) {
 }
 async function loadLibrary() {
   const target=$('doc-results');
-  if(!state.library.docs)target.replaceChildren(el('p',{class:'doc-empty'},'Loading documents…'));
+  if(!state.library.docs)target.replaceChildren(...Array.from({length:7},()=>el('div',{class:'doc-item-skeleton'},el('i'),el('i'))));
   try {
     const data=await api('/api/documents');
     state.library.docs=data.documents;state.library.categories=data.categories;
@@ -435,11 +436,16 @@ function snippetParts(snippet) {
   close();
   return {parts,phrase:best};
 }
+function highlightTitle(title,tokens) {
+  if(!tokens?.length)return title;
+  const pattern=new RegExp('('+tokens.map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')','gi');
+  return title.split(pattern).map((part,i)=>i%2?el('mark',{},part):part);
+}
 function docItem(doc,extra={}) {
   const active=state.viewer?.docId===doc.id&&$('source-dialog').open;
   const kind=doc.kind==='pdf'?'PDF':'Web';
   const button=el('button',{class:'doc-item'+(active?' active':''),type:'button','data-id':doc.id,title:doc.title,onClick:()=>openDocument(doc,extra.open||{})},
-    el('span',{class:'doc-title'},doc.title),
+    el('span',{class:'doc-title'},highlightTitle(doc.title,extra.tokens)),
     extra.snippet?el('span',{class:'doc-snippet'},...extra.snippet):null,
     el('span',{class:'doc-meta'},el('span',{class:'doc-kind '+doc.kind},kind),doc.host,extra.page?` · p. ${extra.page}`:''));
   return button;
@@ -465,7 +471,7 @@ function renderLibrary() {
     const matches=state.library.matches?.query===query?state.library.matches.items:null;
     if(titled.length){
       nodes.push(el('div',{class:'doc-group'},el('span',{},'Titles'),el('small',{},titled.length)));
-      nodes.push(...titled.map(doc=>docItem(doc,{open:{find:''}})));
+      nodes.push(...titled.map(doc=>docItem(doc,{tokens,open:{find:''}})));
     }
     if(query.length>=3){
       if(matches===null)nodes.push(el('div',{class:'doc-group'},el('span',{},'Searching the text…')));
@@ -510,7 +516,7 @@ async function openDocument(item,{page,find=''}={}) {
   document.querySelector('.workspace').classList.remove('show-history');
   setBrowse(true);
   $('source-heading').textContent=item.title;$('doc-find-input').value=find;$('find-status').textContent='';
-  $('document-pages').replaceChildren(el('p',{class:'doc-empty'},'Opening document…'));
+  $('document-pages').replaceChildren(el('div',{class:'doc-skeleton','aria-label':'Opening document'},el('i'),el('i'),el('i'),el('i'),el('i')));
   try {
     const base='/api/documents/'+item.id,query=new URLSearchParams();
     if(page)query.set('page',page);if(find)query.set('find',find);
@@ -531,13 +537,15 @@ async function openDocument(item,{page,find=''}={}) {
         if(first)requestAnimationFrame(()=>jumpPage(first));
       }
     }else renderTextDocument(data,find);
+    $('source-dialog').classList.toggle('text-doc',data.kind!=='pdf');
+    if(data.kind!=='pdf'&&data.original_available)$('doc-about').append(el('a',{class:'about-link',href:base+'/original',target:'_blank',rel:'noopener noreferrer'},'Open saved original ↗'));
     for(const button of document.querySelectorAll('.doc-item'))button.classList.toggle('active',button.dataset.id===item.id);
   }catch(error){if(serial===state.viewerSerial){$('document-pages').replaceChildren(el('p',{class:'failure'},error.message));$('source-heading').textContent='Document unavailable';}}
 }
 function renderTextDocument(data,find) {
   $('page-number').value='';$('page-number').disabled=true;$('page-count').textContent='Text source';
   for(const id of ['previous-page','next-page','zoom'])$(id).disabled=true;
-  $('toggle-highlights').hidden=true;
+  $('toggle-highlights').hidden=true;$('zoom').hidden=true;document.querySelector('.page-controls').hidden=true;
   const article=el('article',{class:'source-text'}),text=data.text,marks=[];
   if(find){
     const lower=text.toLowerCase(),needle=find.toLowerCase();let at=0,from=0;
