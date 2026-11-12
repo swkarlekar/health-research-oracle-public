@@ -1,6 +1,6 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const state = {config:null, threadKey:null, thread:null, runs:[], busy:false, viewer:null, viewerSerial:0, navigation:0, observers:[],  settings:null, localModels:[], checkedAccount:null};
+const state = {config:null, threadKey:null, thread:null, runs:[], busy:false, viewer:null, viewerSerial:0, navigation:0, observers:[],  settings:null, localModels:[], checkedAccount:null, library:{docs:null,matches:null,serial:0,timer:null}};
 function rememberThread(identity) {
   if(!state.threadKey)return;
   if(identity)localStorage.setItem(state.threadKey,identity);
@@ -311,6 +311,7 @@ function stopObservers() {for(const observer of state.observers)observer.disconn
 async function openSource(runId,index) {
   const serial=++state.viewerSerial;stopObservers();
   const dialog=$('source-dialog');if(!dialog.open)dialog.showModal();
+  setBrowse(false);
   $('source-heading').textContent='Loading saved source…';$('document-pages').replaceChildren(el('p',{},'Verifying the saved source and locating the quotation…'));
   $('selected-quote').textContent='';$('highlight-note').textContent='';
   try {
@@ -325,6 +326,11 @@ async function openSource(runId,index) {
   }catch(error){$('document-pages').replaceChildren(el('p',{class:'failure'},error.message));$('source-heading').textContent='Source unavailable';}
 }
 function highlightNote(data,page) {
+  if(!data.quote){
+    if(!data.find)return '';
+    const count=data.page_highlights?.[String(page)]?.boxes.length||0;
+    return count?count+(count===1?' match':' matches')+' on this page.':'No matches on this page.';
+  }
   const selected=data.page_highlights?.[String(page)];
   if(!data.citation_pages?.includes(page))return 'The quoted passage is on PDF page '+data.citation_pages.join(', ')+'.';
   if(!selected?.boxes?.length)return 'The exact passage is shown below. Its location could not be reliably highlighted on this page.';
@@ -375,6 +381,210 @@ function jumpPage(page) {
   $('pdf-page-'+page)?.scrollIntoView({block:'start',behavior:'instant'});state.viewer.currentPage=page;$('page-number').value=page;
   $('highlight-note').textContent=highlightNote(state.viewer,page);
 }
+
+/* ---------- Document library (sidebar) ---------- */
+const BROWSE_FLAG='oracle.sidebarTab';
+function setBrowse(on) {
+  $('source-dialog').classList.toggle('browse',on);
+  for(const id of ['doc-find','doc-about'])$(id).hidden=!on;
+  for(const id of ['quote-eyebrow','selected-quote','jump-citation'])$(id).hidden=on;
+  if(!on)$('highlight-note').hidden=false;
+}
+function setTab(name,focus=false) {
+  for(const tab of ['research','documents']){
+    const selected=tab===name;
+    $('tab-'+tab).setAttribute('aria-selected',String(selected));$('tab-'+tab).tabIndex=selected?0:-1;$('panel-'+tab).hidden=!selected;
+  }
+  try{localStorage.setItem(BROWSE_FLAG,name);}catch{}
+  if(name==='documents'){if(!state.library.docs)loadLibrary();if(focus)$('doc-search').focus();}
+}
+async function loadLibrary() {
+  const target=$('doc-results');
+  if(!state.library.docs)target.replaceChildren(el('p',{class:'doc-empty'},'Loading documents…'));
+  try {
+    const data=await api('/api/documents');
+    state.library.docs=data.documents;state.library.categories=data.categories;
+    $('doc-count').textContent=data.documents.length;$('doc-count').hidden=false;
+    renderLibrary();
+  }catch(error){target.replaceChildren(el('p',{class:'doc-empty'},'Documents could not be loaded: '+error.message));}
+}
+function snippetParts(snippet) {
+  const parts=[];let marked=false,current='';
+  const flush=()=>{if(current)parts.push(marked?el('mark',{},current):current);current='';};
+  for(const ch of snippet){
+    if(ch==='\u0001'){flush();marked=true;}
+    else if(ch==='\u0002'){flush();marked=false;}
+    else current+=ch;
+  }
+  flush();
+  // The longest run of adjacent highlighted words becomes the phrase to find inside the document.
+  let best='',phrase=[];
+  const close=()=>{if(phrase.join(' ').length>best.length)best=phrase.join(' ');phrase=[];};
+  for(const part of parts){
+    if(part instanceof Node)phrase.push(part.textContent);
+    else if(!part.trim()&&phrase.length)continue;
+    else close();
+  }
+  close();
+  return {parts,phrase:best};
+}
+function docItem(doc,extra={}) {
+  const active=state.viewer?.docId===doc.id&&$('source-dialog').open;
+  const kind=doc.kind==='pdf'?'PDF':'Web';
+  const button=el('button',{class:'doc-item'+(active?' active':''),type:'button','data-id':doc.id,title:doc.title,onClick:()=>openDocument(doc,extra.open||{})},
+    el('span',{class:'doc-title'},doc.title),
+    extra.snippet?el('span',{class:'doc-snippet'},...extra.snippet):null,
+    el('span',{class:'doc-meta'},el('span',{class:'doc-kind '+doc.kind},kind),doc.host,extra.page?` · p. ${extra.page}`:''));
+  return button;
+}
+function renderLibrary() {
+  const target=$('doc-results'),docs=state.library.docs;if(!docs)return;
+  const query=$('doc-search').value.trim(),nodes=[];
+  if(!query){
+    for(const category of state.library.categories){
+      const group=docs.filter(doc=>doc.category===category.id);if(!group.length)continue;
+      nodes.push(el('div',{class:'doc-group'},el('span',{},category.label),el('small',{},group.length)));
+      nodes.push(...group.map(doc=>docItem(doc)));
+    }
+  }else{
+    const tokens=query.toLowerCase().split(/\s+/);
+    const titled=docs.filter(doc=>{const hay=doc.title.toLowerCase();return tokens.every(token=>hay.includes(token));});
+    const matches=state.library.matches?.query===query?state.library.matches.items:null;
+    if(titled.length){
+      nodes.push(el('div',{class:'doc-group'},el('span',{},'Titles'),el('small',{},titled.length)));
+      nodes.push(...titled.map(doc=>docItem(doc,{open:{find:''}})));
+    }
+    if(query.length>=3){
+      if(matches===null)nodes.push(el('div',{class:'doc-group'},el('span',{},'Searching the text…')));
+      else if(matches.length){
+        nodes.push(el('div',{class:'doc-group'},el('span',{},'Mentioned in text'),el('small',{},matches.length)));
+        for(const hit of matches){
+          const {parts,phrase}=snippetParts(hit.snippet);
+          nodes.push(docItem(hit,{snippet:parts,page:hit.page,open:{find:phrase||query,page:hit.page||undefined}}));
+        }
+      }
+    }
+    if(!titled.length&&matches!==null&&!matches.length)nodes.push(el('p',{class:'doc-empty'},`No document matches “${query}”.`));
+    else if(!titled.length&&matches===null&&query.length<3)nodes.push(el('p',{class:'doc-empty'},'Keep typing, or clear the box to browse all documents.'));
+  }
+  target.replaceChildren(...nodes);
+}
+function searchLibrary() {
+  const query=$('doc-search').value.trim();
+  renderLibrary();
+  clearTimeout(state.library.timer);
+  if(query.length<3)return;
+  const serial=++state.library.serial;
+  state.library.timer=setTimeout(async()=>{
+    try{
+      const data=await api('/api/documents?q='+encodeURIComponent(query));
+      if(serial!==state.library.serial)return;
+      state.library.matches={query,items:data.matches};renderLibrary();
+    }catch(error){if(serial===state.library.serial){state.library.matches={query,items:[]};renderLibrary();}}
+  },220);
+}
+function documentAbout(item) {
+  const categories=Object.fromEntries((state.library.categories||[]).map(c=>[c.id,c.label]));
+  const note=el('div',{},el('div',{class:'about-row'},el('span',{},'Type'),el('b',{},categories[item.category]||'Source')),
+    el('div',{class:'about-row'},el('span',{},'Format'),el('b',{},item.kind==='pdf'?'PDF':'Web page, saved text')),
+    el('div',{class:'about-row'},el('span',{},'From'),el('b',{},item.host)));
+  $('doc-about').replaceChildren(el('div',{class:'eyebrow'},'ABOUT THIS DOCUMENT'),note);
+}
+async function openDocument(item,{page,find=''}={}) {
+  const serial=++state.viewerSerial;stopObservers();
+  const dialog=$('source-dialog');if(!dialog.open)dialog.showModal();
+  document.querySelector('.workspace').classList.remove('show-history');
+  setBrowse(true);
+  $('source-heading').textContent=item.title;$('doc-find-input').value=find;$('find-status').textContent='';
+  $('document-pages').replaceChildren(el('p',{class:'doc-empty'},'Opening document…'));
+  try {
+    const base='/api/documents/'+item.id,query=new URLSearchParams();
+    if(page)query.set('page',page);if(find)query.set('find',find);
+    const data=await api(base+(query.toString()?'?'+query:''));
+    if(serial!==state.viewerSerial)return;
+    state.viewer={...data,base,docId:item.id,item,currentPage:data.page||1,matchIndex:-1};
+    $('source-heading').textContent=item.title;
+    const official=safeLink(data.source_url,'Official source ↗');$('official-link').replaceWith(Object.assign(official,{id:'official-link'}));
+    $('original-link').href=base+'/original'+(data.page?'#page='+data.page:'');$('original-link').hidden=!data.original_available;
+    $('document-pages').classList.remove('zoomed','hide-highlights');$('zoom').textContent='Zoom in';$('zoom').setAttribute('aria-pressed','false');$('toggle-highlights').textContent='Highlights on';$('toggle-highlights').setAttribute('aria-pressed','true');
+    documentAbout(item);
+    if(data.kind==='pdf'){
+      renderPdf(data);
+      if(find){
+        const pages=data.find_pages||[],start=page||1,first=pages.find(n=>n>=start)||pages[0];
+        $('find-status').textContent=pages.length?`${data.find_count} ${data.find_count===1?'match':'matches'} · ${pages.length} ${pages.length===1?'page':'pages'}`:'No matches';
+        $('find-prev').disabled=$('find-next').disabled=!pages.length;
+        if(first)requestAnimationFrame(()=>jumpPage(first));
+      }
+    }else renderTextDocument(data,find);
+    for(const button of document.querySelectorAll('.doc-item'))button.classList.toggle('active',button.dataset.id===item.id);
+  }catch(error){if(serial===state.viewerSerial){$('document-pages').replaceChildren(el('p',{class:'failure'},error.message));$('source-heading').textContent='Document unavailable';}}
+}
+function renderTextDocument(data,find) {
+  $('page-number').value='';$('page-number').disabled=true;$('page-count').textContent='Text source';
+  for(const id of ['previous-page','next-page','zoom'])$(id).disabled=true;
+  const article=el('article',{class:'source-text'}),text=data.text,marks=[];
+  if(find){
+    const lower=text.toLowerCase(),needle=find.toLowerCase();let at=0,from=0;
+    while(marks.length<500&&(at=lower.indexOf(needle,from))!==-1){
+      article.append(text.slice(from,at));const mark=el('mark',{},text.slice(at,at+needle.length));article.append(mark);marks.push(mark);from=at+needle.length;
+    }
+    article.append(text.slice(from));
+  }else article.append(text);
+  state.viewer.marks=marks;
+  $('document-pages').replaceChildren(article);
+  $('highlight-note').textContent='';
+  $('find-status').textContent=find?(marks.length?`${marks.length}${marks.length>=500?'+':''} ${marks.length===1?'match':'matches'}`:'No matches'):'';
+  $('find-prev').disabled=$('find-next').disabled=marks.length<2;
+  if(marks.length)stepMatch(1);
+}
+function stepMatch(direction) {
+  const viewer=state.viewer;if(!viewer?.docId)return;
+  if(viewer.kind==='pdf'){
+    const pages=viewer.find_pages||[];if(!pages.length)return;
+    const here=viewer.currentPage;
+    const next=direction>0?(pages.find(n=>n>here)||pages[0]):([...pages].reverse().find(n=>n<here)||pages[pages.length-1]);
+    jumpPage(next);return;
+  }
+  const marks=viewer.marks||[];if(!marks.length)return;
+  marks[viewer.matchIndex]?.classList.remove('current');
+  viewer.matchIndex=(viewer.matchIndex+direction+marks.length)%marks.length;
+  const mark=marks[viewer.matchIndex];mark.classList.add('current');mark.scrollIntoView({block:'center'});
+  $('find-status').textContent=`${viewer.matchIndex+1} of ${marks.length}${marks.length>=500?'+':''}`;
+}
+function submitFind(event) {
+  event.preventDefault();
+  const viewer=state.viewer;if(!viewer?.docId)return;
+  const find=$('doc-find-input').value.trim();
+  if(viewer.kind==='pdf')openDocument(viewer.item,{page:viewer.currentPage,find});
+  else{renderTextDocument(viewer,find);}
+}
+function libraryKeys(event) {
+  const items=[...document.querySelectorAll('#doc-results .doc-item')];
+  if(event.target===$('doc-search')){
+    if(event.key==='ArrowDown'&&items.length){event.preventDefault();items[0].focus();}
+    else if(event.key==='Enter'&&items.length){event.preventDefault();items[0].click();}
+    else if(event.key==='Escape'&&$('doc-search').value){event.preventDefault();$('doc-search').value='';searchLibrary();}
+  }else if(event.target.classList?.contains('doc-item')){
+    const at=items.indexOf(event.target);
+    if(event.key==='ArrowDown'&&items[at+1]){event.preventDefault();items[at+1].focus();}
+    else if(event.key==='ArrowUp'){event.preventDefault();(items[at-1]||$('doc-search')).focus();}
+  }
+}
+
+$('tab-research').addEventListener('click',()=>setTab('research'));
+$('tab-documents').addEventListener('click',()=>setTab('documents'));
+for(const id of ['tab-research','tab-documents'])$(id).addEventListener('keydown',event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){const name=id==='tab-research'?'documents':'research';setTab(name);$('tab-'+name).focus();}});
+$('doc-search').addEventListener('input',searchLibrary);
+$('panel-documents').addEventListener('keydown',libraryKeys);
+$('doc-find').addEventListener('submit',submitFind);
+$('find-next').addEventListener('click',()=>stepMatch(1));
+$('find-prev').addEventListener('click',()=>stepMatch(-1));
+document.addEventListener('keydown',event=>{
+  if(event.key==='/'&&!event.metaKey&&!event.ctrlKey&&!event.altKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName)&&!document.querySelector('dialog[open]')){
+    event.preventDefault();document.querySelector('.workspace').classList.add('show-history');setTab('documents',true);
+  }
+});
 $('question-form').addEventListener('submit',submit);
 $('open-settings').addEventListener('click',openSettings);
 $('close-settings').addEventListener('click',()=>$('settings-dialog').close());
@@ -403,7 +613,7 @@ $('examples').addEventListener('change',event=>selectCase(event.target.value));
 $('saved-example').addEventListener('click',savedExample);
 $('close-debug').addEventListener('click',()=>$('debug-dialog').close());
 $('close-source').addEventListener('click',()=>$('source-dialog').close());
-$('source-dialog').addEventListener('close',()=>{state.viewerSerial++;stopObservers();});
+$('source-dialog').addEventListener('close',()=>{state.viewerSerial++;stopObservers();for(const button of document.querySelectorAll('.doc-item.active'))button.classList.remove('active');});
 $('previous-page').addEventListener('click',()=>jumpPage(state.viewer.currentPage-1));
 $('next-page').addEventListener('click',()=>jumpPage(state.viewer.currentPage+1));
 $('page-number').addEventListener('change',event=>jumpPage(event.target.value));
@@ -425,6 +635,9 @@ $('zoom').addEventListener('click',()=>{const zoomed=$('document-pages').classLi
       if(group.children.length)$('examples').append(group);
     }
     updateSavedExample();
+    loadLibrary();
+    let tab='research';try{tab=localStorage.getItem(BROWSE_FLAG)||'research';}catch{}
+    if(tab==='documents')setTab('documents');
     const threads=await history();
     const last=localStorage.getItem(state.threadKey)||localStorage.getItem('oracle.activeThread');
     localStorage.removeItem('oracle.activeThread');
