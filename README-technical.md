@@ -69,6 +69,7 @@ For local generation, install and run Ollama, LM Studio, or another compatible s
 - `oracle/paragraphs.py` provides the paragraph keyword and vector indexes; `oracle/local_vectors.py` the chunk vectors and query-embedding cache.
 - `oracle/harness.py` validates the result: exact quotations, citations, unchanged scope, and the research-only boundary. Invalid output is withheld.
 - `oracle/output.py`, `oracle/viewer.py`, and `oracle/web.py` produce the answer view, the debug report, and the document viewer.
+- `oracle/library.py` backs the sidebar's Documents tab: the approved-source list, cleaned titles and categories, and keyword search over the local FTS index. `GET /api/documents` lists sources (or searches with `?q=`), and `/api/documents/<id>` opens one, with `?find=` marking matches, `/page/<n>.png` for PDF pages, and `/original` for the saved file. These routes read verified local data only: they never load the vector indexes and make no model or AWS call. The document list is built once per server start and cached in memory.
 
 Local models, keyword-only mode, and the CLI use the original loop in `oracle/harness.py`: one search, bounded context expansion (`oracle/context.py`), a draft, and a skeptical review with at most one additional search. That loop can use the optional document map (`oracle/relationships.py`), which records references between documents and reviewed interpretations of them. Following the map's references is available in the research pipeline as a setting (`limits.reference_cap`) and is off by default.
 

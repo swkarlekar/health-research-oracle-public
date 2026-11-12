@@ -234,7 +234,8 @@ class LocalApp:
         key = (identity, index, base.digest(base.canonical(result['quotes'][index])))
         with self.viewer_lock:
             if key not in self.viewers:
-                with self.corpus() as corpus:
+                # Opening a citation needs verified source text only, never the vector indexes or a model.
+                with self.source_corpus() as corpus:
                     self.viewers[key] = CitationViewer(corpus).freeze(result, index)
                 while len(self.viewers) > 24:
                     self.viewers.popitem(last=False)
