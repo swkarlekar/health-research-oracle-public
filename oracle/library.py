@@ -62,7 +62,7 @@ def entries(connection, policy):
         kind = 'pdf' if meta.get('media_type') == 'application/pdf' else 'web'
         title_text = display_title(meta.get('title'), meta.get('extracted_title'))
         items.append({'id': identity, 'title': title_text,
-                      'category': category(url, title_text), 'kind': kind, 'host': urlsplit(url).netloc.removeprefix('www.'),
+                      'url': url, 'category': category(url, title_text), 'kind': kind, 'host': urlsplit(url).netloc.removeprefix('www.'),
                       'characters': meta.get('char_count')})
     items.sort(key=lambda item: (order[item['category']], item['title'].lower()))
     return items

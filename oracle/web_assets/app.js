@@ -107,6 +107,13 @@ function renderMessages() {
   $('context-row').hidden=!state.runs.length;
   $('messages').replaceChildren(...state.runs.map(renderRun));
   $('conversation-title').textContent=state.runs.length?state.runs[0].question:'New research';
+  refreshCited();
+}
+function refreshCited() {
+  const signature=state.runs.flatMap(run=>(run.answer?.quotes||[]).map(quote=>quote.citation?.source_url)).filter(Boolean).sort().join('|');
+  if(signature===state.library.cited||!state.library.docs||$('doc-search').value.trim())return;
+  state.library.cited=signature;
+  const list=$('doc-results'),top=list.scrollTop;renderLibrary();list.scrollTop=top;
 }
 async function history() {
   const threads=await api('/api/threads');
@@ -388,7 +395,7 @@ function setBrowse(on) {
   $('source-dialog').classList.toggle('browse',on);
   for(const id of ['doc-find','doc-about'])$(id).hidden=!on;
   for(const id of ['quote-eyebrow','selected-quote','jump-citation'])$(id).hidden=on;
-  if(!on)$('highlight-note').hidden=false;
+  $('toggle-highlights').hidden=false;
 }
 function setTab(name,focus=false) {
   for(const tab of ['research','documents']){
@@ -441,6 +448,12 @@ function renderLibrary() {
   const target=$('doc-results'),docs=state.library.docs;if(!docs)return;
   const query=$('doc-search').value.trim(),nodes=[];
   if(!query){
+    const urls=new Set(state.runs.flatMap(run=>(run.answer?.quotes||[]).map(quote=>quote.citation?.source_url)).filter(Boolean));
+    const cited=docs.filter(doc=>urls.has(doc.url));
+    if(cited.length){
+      nodes.push(el('div',{class:'doc-group cited'},el('span',{},'Cited in this research'),el('small',{},cited.length)));
+      nodes.push(...cited.map(doc=>docItem(doc)));
+    }
     for(const category of state.library.categories){
       const group=docs.filter(doc=>doc.category===category.id);if(!group.length)continue;
       nodes.push(el('div',{class:'doc-group'},el('span',{},category.label),el('small',{},group.length)));
@@ -523,6 +536,7 @@ async function openDocument(item,{page,find=''}={}) {
 function renderTextDocument(data,find) {
   $('page-number').value='';$('page-number').disabled=true;$('page-count').textContent='Text source';
   for(const id of ['previous-page','next-page','zoom'])$(id).disabled=true;
+  $('toggle-highlights').hidden=true;
   const article=el('article',{class:'source-text'}),text=data.text,marks=[];
   if(find){
     const lower=text.toLowerCase(),needle=find.toLowerCase();let at=0,from=0;

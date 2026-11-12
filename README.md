@@ -33,6 +33,7 @@ Open **⚙ Model settings**, check your AWS account, and explicitly authorize a 
 
 ## Using the workspace
 
+- **Look up a source.** The sidebar's **Documents** tab lists all 81 sources by type, filters by title as you type, and searches the text of every source (press `/` to jump to the box). Opening a document shows it in the same viewer used for citations, with find-in-document and match navigation. Sources cited in the current chat are listed first. Lookup is entirely local and never calls AWS.
 - **Ask a research question.** The sidebar offers the four client reference cases, five boundary tests, and 15 synthetic examples. Follow-up questions can build on your earlier questions; earlier generated answers are never treated as evidence.
 - **Read the answer and its evidence.** Each response leads with a direct answer, then findings that each name their source, then the exact quotations. Click a citation to open the document with the text highlighted.
 - **Read the uncertainties.** Under each answer the tool lists what the sources leave open: wording that can be read two ways, exceptions that might apply, sources that disagree, and things the sources do not address, each with a follow-up question. It is designed to raise a doubt rather than hide one.
