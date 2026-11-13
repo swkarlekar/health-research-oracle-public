@@ -15,6 +15,15 @@ Before any paid call you check the AWS account and explicitly authorize a sessio
 shows what was approved, when it expires, and the per-computer spending total, and it can disable paid
 calls. See the [technical README](../README-technical.md#model-settings-and-spending).
 
+## Sample chats
+
+The first start adds seven finished Bedrock runs of the client reference questions to your history (original and
+simplified wording of Cases 1-3, and Case 4). They carry the label "Sample run · Bedrock · not legally reviewed",
+open like any chat, and include the full debug report. They are validated against your installed sources before
+they are shown and are added only once. See the [README](../README.md#sample-chats).
+
+![Sample chats listed under Your research](screenshots/ui-sample-chats.jpg)
+
 ## Asking
 
 Type a question or pick one from **Example questions** on the sidebar's **Research** tab: the four client

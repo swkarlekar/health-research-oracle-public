@@ -4,7 +4,7 @@
 
 <img src="oracle/web_assets/trace-logo.svg" width="80" alt="TRACE logo, a pencil tracing a heart">
 
-**[▶ Watch the demo video](https://github.com/swkarlekar/health-research-oracle-public/releases/download/demo-video-2026-11-08/design_sprint_demo_video.mov)** (MOV download, 119 MiB; recorded on an earlier version)
+**[▶ Watch the demo video](https://github.com/swkarlekar/health-research-oracle-public/releases/download/demo-video-2026-11-13/trace-demo-2026-11-13.mp4)** (MP4, 18 MiB, 2½ minutes, no audio): document lookup, then two of the bundled sample chats with citations, open points and the debug report. ([Earlier recording](https://github.com/swkarlekar/health-research-oracle-public/releases/tag/demo-video-2026-11-08), MOV, 119 MiB.)
 
 A research assistant for public health insurance advocates, based on the Community Service Society of New York (CSSNY) design brief. Ask a question in plain language, read the answer with its supporting quotations, see what the sources leave uncertain, and open any cited document inside the chat with the passage highlighted. The advocate remains responsible for interpreting the rules and applying them to a client's situation.
 
@@ -26,6 +26,8 @@ make run
 ```
 
 `make setup` installs a small Python runtime and downloads and verifies the 364 MB [data release](https://github.com/swkarlekar/health-research-oracle-public/releases/tag/data-2026-11-11-paragraphs): documents, PDFs, search indexes, and an optional document map. It does not download an LLM or create AWS resources. `make run` opens the local page in Chrome. Keep the terminal running; Ctrl+C stops the server.
+
+The first time the server starts it also adds seven **sample chats** to your research history: the four client reference questions, each in the advocate's original wording and as a simplified question (Case 4 has only the simplified form). They are finished Bedrock runs with their full debug reports, so you can read answers, open citations and inspect every step without spending anything. See [Sample chats](#sample-chats).
 
 Open **⚙ Model settings**, check your AWS account, and explicitly authorize a spending allowance before asking a question. Opening the app or saving a model choice does not authorize paid calls. Each collaborator uses their own AWS account; no keys are shared with the project.
 
@@ -83,6 +85,20 @@ The sidebar has two tabs. **Research** holds your conversations and the example 
 | Statute opened from the Documents tab, match highlighted | No-match state |
 
 The answer screenshots use the sample questions from the CSSNY design brief, answered on Bedrock. The model settings screenshot above is from an earlier version of the interface.
+
+## Sample chats
+
+On first start, seven finished runs of the client reference questions appear under **Your research**, titled `Case 1 · simplified · SNF out-of-network coverage`, `Case 1 · original · …`, and so on. Each has the full answer, clickable citations, open points, and a **View debug report** with the search plan, passages read, prompts, and every model call. They behave like any earlier chat, and you can ask follow-ups in them (follow-ups are new, paid runs).
+
+![Sample chats listed under Your research](docs/screenshots/ui-sample-chats.jpg)
+
+![A sample chat in the advocate's original wording](docs/screenshots/ui-sample-original-question.jpg)
+
+![Debug report of a sample run](docs/screenshots/ui-debug-report.jpg)
+
+- They are labelled **Sample run · Bedrock · not legally reviewed**. They were produced by the pipeline in this repository (Qwen3 32B planning and screening, Mistral Large 3 writing) and judged by the developers only; see [Current limits](#current-limits).
+- Seeding is local and free: no model, embedding or AWS call. Each run is checked against your installed sources and every quotation is re-resolved against the saved source text; a run that does not match is skipped, never shown. Seeded runs are added once and your own chats are never touched.
+- The runs live in [`examples/saved-runs/`](examples/saved-runs/) as compressed debug reports. To refresh them after changing the pipeline or data, run the questions on Bedrock and then `python scripts/export_saved_runs.py`. To see the samples re-added, delete `artifacts/ui/history.sqlite`.
 
 ## How the harness works
 

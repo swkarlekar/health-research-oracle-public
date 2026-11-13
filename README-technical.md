@@ -46,6 +46,7 @@ python3 scripts/run_demo.py --port 8766
 | Optional document map | Local `artifacts/relationships.sqlite`; not used for Bedrock answers by default |
 | Planning, reading, answering, checking | The selected Bedrock model(s), or a local model server |
 | Chat history, debug reports, settings | Local `artifacts/ui/`; never part of the data release |
+| Bundled sample chats | `examples/saved-runs/` in the repository (compressed debug reports, about 2 MB); copied into your chat history once at server start by `oracle/saved_runs.py` after the registry hash and every quotation are verified |
 | Grants and spending ledger | Local, ignored by Git; never distributed |
 
 The data release contains the sources, processed corpus, both vector indexes, and the document map. It excludes query caches, chat history, credentials, grants, model weights, and experiment outputs. See the [bundle contract](docs/data-bundle.md). Searching is exhaustive cosine comparison on the laptop; numpy makes it fast and is installed by setup. If numpy or the paragraph-vector file is missing, search still works with chunk vectors and keywords, with weaker recall.
