@@ -24,6 +24,7 @@ from .viewer import CitationViewer
 from .local_vectors import LocalVectorIndex, LocalVectorCorpus, cached_queries, VECTOR_CACHE, QUERY_CACHE
 from .model_settings import ModelSettings, discover_local, check_aws
 from .runtime_identity import runtime_identity
+from . import saved_runs
 
 ASSETS = Path(__file__).with_name('web_assets')
 
@@ -536,6 +537,12 @@ def serve(args):
                               context_chars=args.context_chars, retriever='local-vector',
                               vector_cache=args.vector_cache, query_cache=args.query_cache)
         threading.Thread(target=server.app.library_data, daemon=True).start()  # warm the document list
+        try:
+            added = saved_runs.seed(server.app)
+            if added:
+                print(f'Added {added} bundled sample chats from examples/saved-runs', flush=True)
+        except Exception as exc:  # Sample chats are a convenience; never block start-up.
+            print(f'Bundled sample chats were not added: {exc}', flush=True)
         print(f'TRACE: http://127.0.0.1:{server.server_address[1]} (local only)', flush=True)
         server.serve_forever()
     except KeyboardInterrupt:
