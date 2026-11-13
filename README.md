@@ -4,7 +4,7 @@
 
 <img src="oracle/web_assets/trace-logo.svg" width="80" alt="TRACE logo, a pencil tracing a heart">
 
-**[▶ Watch the demo video](https://github.com/swkarlekar/health-research-oracle-public/releases/download/demo-video-2026-11-08/design_sprint_demo_video.mov)** (MOV download, 119 MiB; recorded on an earlier version)
+**[▶ Watch the demo video](https://github.com/swkarlekar/health-research-oracle-public/releases/download/demo-video-2026-11-13/trace-demo-2026-11-13.mp4)** (MP4, 18 MiB, 2½ minutes, no audio): document lookup, then two of the bundled sample chats with citations, open points and the debug report. ([Earlier recording](https://github.com/swkarlekar/health-research-oracle-public/releases/tag/demo-video-2026-11-08), MOV, 119 MiB.)
 
 A research assistant for public health insurance advocates, based on the Community Service Society of New York (CSSNY) design brief. Ask a question in plain language, read the answer with its supporting quotations, see what the sources leave uncertain, and open any cited document inside the chat with the passage highlighted. The advocate remains responsible for interpreting the rules and applying them to a client's situation.
 
